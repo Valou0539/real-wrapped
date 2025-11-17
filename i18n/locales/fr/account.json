@@ -1,0 +1,121 @@
+{
+  "account": {
+    "layout": {
+      "title": "Paramètres du compte",
+      "profile": "Profil",
+      "security": "Sécurité"
+    },
+    "profile": {
+      "seo": {
+        "title": "Profil",
+        "description": "Vous pouvez consulter et modifier les informations de votre profil ici."
+      },
+      "title": "Profil",
+      "description": "Vous pouvez consulter et modifier les informations de votre profil ici.",
+      "fields": {
+        "name": "Nom",
+        "email": "Adresse e-mail",
+        "email_requested": "En attente de confirmation : {email}"
+      },
+      "actions": {
+        "update": "Mettre à jour"
+      },
+      "updateName": {
+        "title": "Mettre à jour le nom",
+        "description": "Choisissez un nouveau nom d'affichage pour votre compte.",
+        "label": "Nom",
+        "confirm": "Enregistrer",
+        "cancel": "Annuler",
+        "success": "Nom mis à jour avec succès.",
+        "successDetail": "Votre nom a été mis à jour.",
+        "errors": {
+          "required": "Le nom est obligatoire.",
+          "already_taken": "Ce nom est déjà pris.",
+          "too_short": "Le nom doit contenir au moins 2 caractères.",
+          "generic": "La mise à jour de votre nom a échoué. Veuillez réessayer."
+        }
+      },
+      "updateEmail": {
+        "title": "Mettre à jour l'adresse e-mail",
+        "description": "Saisissez l'adresse e-mail sur laquelle envoyer le lien de confirmation.",
+        "label": "Adresse e-mail",
+        "confirm": "Envoyer",
+        "cancel": "Annuler",
+        "success": "E-mail de vérification envoyé.",
+        "successDetail": "Vérifiez votre boîte de réception pour obtenir le code de confirmation.",
+        "errors": {
+          "required": "L'adresse e-mail est obligatoire.",
+          "invalid": "Veuillez saisir une adresse e-mail valide.",
+          "already_used": "Cette adresse e-mail est déjà utilisée.",
+          "too_many_attempts": "Trop de tentatives. Veuillez réessayer plus tard.",
+          "generic": "La demande de changement d'e-mail a échoué. Veuillez réessayer."
+        }
+      },
+      "checkEmail": {
+        "title": "Saisissez le code de vérification",
+        "description": "Nous avons envoyé un code à 6 chiffres à {email}. Indiquez-le ci-dessous pour confirmer votre nouvelle adresse e-mail.",
+        "defaultEmail": "votre nouvelle adresse e-mail",
+        "label": "Code de vérification",
+        "confirm": "Confirmer",
+        "cancel": "Annuler",
+        "changeEmail": "Modifier l'e-mail",
+        "success": "Adresse e-mail mise à jour.",
+        "successDetail": "Votre adresse e-mail a été modifiée.",
+        "errors": {
+          "invalid_length": "Saisissez le code de 6 chiffres.",
+          "missing_email": "Impossible de retrouver l'adresse à valider. Veuillez recommencer la procédure.",
+          "invalid_code": "Ce code de vérification est incorrect.",
+          "expired_code": "Ce code a expiré ou l'adresse est déjà utilisée.",
+          "not_found": "Aucun compte correspondant trouvé.",
+          "invalid_input": "Les informations fournies ne sont pas valides.",
+          "generic": "La confirmation du changement d'e-mail a échoué. Veuillez réessayer."
+        }
+      }
+    },
+    "security": {
+      "seo": {
+        "title": "Sécurité",
+        "description": "Gérez les paramètres de sécurité et les mises à jour de mot de passe de votre compte."
+      },
+      "title": "Sécurité",
+      "description": "Gérez les paramètres de sécurité de votre compte.",
+      "sections": {
+        "password": {
+          "title": "Changer le mot de passe",
+          "description": "Utilisez un mot de passe robuste et mettez-le à jour régulièrement pour protéger votre compte."
+        },
+        "deleteAccount": {
+          "title": "Supprimer le compte",
+          "description": "Supprimez définitivement votre compte. Cette action est irréversible."
+        }
+      },
+      "form": {
+        "current_password": "Mot de passe actuel",
+        "new_password": "Nouveau mot de passe",
+        "password_confirmation": "Confirmer le nouveau mot de passe",
+        "submit": "Modifier le mot de passe",
+        "success": "Mot de passe mis à jour",
+        "successDetail": "Votre mot de passe a été changé.",
+        "errors": {
+          "current_password_required": "Le mot de passe actuel est obligatoire.",
+          "invalid_current_password": "Le mot de passe actuel est incorrect.",
+          "generic": "La mise à jour du mot de passe a échoué. Veuillez réessayer."
+        }
+      },
+      "deleteAccount": {
+        "title": "Supprimer le compte",
+        "description": "Saisissez votre mot de passe actuel pour confirmer la suppression du compte.",
+        "passwordLabel": "Mot de passe actuel",
+        "cancel": "Annuler",
+        "confirm": "Supprimer le compte",
+        "success": "Compte supprimé",
+        "successDetail": "Votre compte a été supprimé.",
+        "errors": {
+          "required": "Le mot de passe est obligatoire.",
+          "invalid_password": "Le mot de passe est incorrect.",
+          "generic": "La suppression du compte a échoué. Veuillez réessayer."
+        }
+      }
+    }
+  }
+}

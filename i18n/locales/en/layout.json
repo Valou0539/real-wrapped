@@ -1,0 +1,15 @@
+{
+  "layout": {
+    "topbar": {
+      "login": "Log in",
+      "signup": "Sign up",
+      "open_menu": "Open main menu",
+      "close_menu": "Close main menu",
+      "toggle_lang_menu": "Toggle language menu",
+      "toggle_profile_menu": "Toggle profile menu",
+      "profile": "Profile",
+      "logout": "Logout",
+      "admin": "Admin panel"
+    }
+  }
+}

@@ -1,0 +1,101 @@
+@layer theme, base, primevue, components, utilities;
+
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/preflight.css" layer(base);
+@import "tailwindcss/utilities.css" layer(utilities);
+@import "./default-colors.css";
+@import "primeicons/primeicons.css";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme static {
+  --font-sans: Poppins, sans-serif;
+  --color-primary-50: oklch(0.97 0.014 254.604);
+  --color-primary-100: oklch(0.932 0.032 255.585);
+  --color-primary-200: oklch(0.882 0.059 254.128);
+  --color-primary-300: oklch(0.809 0.105 251.813);
+  --color-primary-400: oklch(0.707 0.165 254.624);
+  --color-primary-500: oklch(0.623 0.214 259.815);
+  --color-primary-600: oklch(0.546 0.245 262.881);
+  --color-primary-700: oklch(0.488 0.243 264.376);
+  --color-primary-800: oklch(0.424 0.199 265.638);
+  --color-primary-900: oklch(0.379 0.146 265.522);
+  --color-primary-950: oklch(0.282 0.091 267.935);
+
+  --color-surface-0: #ffffff;
+  --color-surface-50: oklch(0.985 0 0);
+  --color-surface-100: oklch(0.97 0 0);
+  --color-surface-200: oklch(0.922 0 0);
+  --color-surface-300: oklch(0.87 0 0);
+  --color-surface-400: oklch(0.708 0 0);
+  --color-surface-500: oklch(0.556 0 0);
+  --color-surface-600: oklch(0.439 0 0);
+  --color-surface-700: oklch(0.371 0 0);
+  --color-surface-800: oklch(0.269 0 0);
+  --color-surface-900: oklch(0.205 0 0);
+  --color-surface-950: oklch(0.145 0 0);
+
+  --color-bg-light: #ffffff;
+  --color-bg-dark: #000000;
+  --color-bg: var(--color-bg-light);
+
+  --color-contrast-light: var(--color-gray-900);
+  --color-contrast-dark: var(--color-white);
+  --color-contrast: var(--color-contrast-light);
+
+  --color-gray-light: var(--color-gray-500);
+  --color-gray-dark: var(--color-gray-400);
+  --color-gray: var(--color-gray-light);
+
+  --color-low-contrast-light: var(--color-gray-100);
+  --color-low-contrast-dark: var(--color-neutral-800);
+  --color-low-contrast: var(--color-low-contrast-light);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-bg: var(--color-bg-dark);
+    --color-contrast: var(--color-contrast-dark);
+    --color-gray: var(--color-gray-dark);
+    --color-low-contrast: var(--color-low-contrast-dark);
+  }
+}
+
+.light {
+  --color-bg: var(--color-bg-light);
+  --color-contrast: var(--color-contrast-light);
+  --color-gray: var(--color-gray-light);
+  --color-low-contrast: var(--color-low-contrast-light);
+}
+
+.dark {
+  --color-bg: var(--color-bg-dark);
+  --color-contrast: var(--color-contrast-dark);
+  --color-gray: var(--color-gray-dark);
+  --color-low-contrast: var(--color-low-contrast-dark);
+}
+
+@layer components {
+  /* Link styles */
+  .link-primary {
+    @apply text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300 font-semibold;
+  }
+
+  .link-danger {
+    @apply text-red-600 hover:text-red-500 dark:text-red-400 dark:hover:text-red-300 font-semibold;
+  }
+
+  /* Background utilities */
+  .background {
+    @apply bg-bg;
+  }
+
+  .background-color {
+    @apply bg-bg transition-colors duration-200;
+  }
+}
+
+html {
+  @apply bg-bg overflow-x-hidden text-sm transition-colors duration-200;
+  scrollbar-width: thin;
+}

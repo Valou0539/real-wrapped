@@ -1,0 +1,20 @@
+{
+  "error": {
+    "title": {
+      "default": "Une erreur est survenue",
+      "403": "Accès refusé",
+      "404": "Page introuvable",
+      "500": "Erreur serveur"
+    },
+    "description": {
+      "default": "Désolé, une erreur inattendue est survenue. Réessayez ou retournez à l'accueil.",
+      "403": "Vous n'avez pas l'autorisation d'accéder à cette page.",
+      "404": "La page que vous cherchez n'existe pas ou a été déplacée.",
+      "500": "Le serveur a rencontré un problème. Veuillez réessayer dans quelques instants."
+    },
+    "actions": {
+      "back": "Retour",
+      "home": "Aller à l'accueil"
+    }
+  }
+}

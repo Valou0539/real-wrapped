@@ -1,0 +1,89 @@
+{
+  "test": "abc",
+  "authentication": {
+    "login": {
+      "title": "Connectez-vous à votre compte",
+      "not_a_member": "Pas encore membre ?",
+      "sign_up_now": "Inscrivez-vous maintenant",
+      "username": "Nom d'utilisateur",
+      "password": "Mot de passe",
+      "remember_me": "Se souvenir de moi",
+      "forgot_password": "Mot de passe oublié ?",
+      "sign_in": "Se connecter",
+      "seo": {
+        "title": "Connexion",
+        "description": "Connectez-vous à votre compte"
+      }
+    },
+    "sign-up": {
+      "title": "Créer un compte",
+      "already_a_member": "Déjà membre ?",
+      "sign_in_now": "Connectez-vous maintenant",
+      "username": "Nom d'utilisateur",
+      "email": "Email",
+      "password": "Mot de passe",
+      "i_agree_to": "J'accepte les",
+      "terms_of_service": "Conditions d'utilisation",
+      "sign_up": "S'inscrire",
+      "seo": {
+        "title": "Créer un compte",
+        "description": "Créez un compte pour commencer à gagner de l'argent en jouant à Fortnite"
+      }
+    },
+    "verify-email": {
+      "title": "Vérifiez votre adresse email",
+      "email_sent": "Nous avons envoyé un email avec le code à",
+      "verify": "Vérifier",
+      "resend_code": "Renvoyer le code",
+      "resend_code_success": {
+        "summary": "Email envoyé",
+        "detail": "Nous avons envoyé un nouveau code de vérification à votre email"
+      },
+      "seo": {
+        "title": "Vérification d'email",
+        "description": "Vérifiez votre adresse email pour commencer à gagner de l'argent en jouant à Fortnite."
+      }
+    },
+    "forgot-password": {
+      "title": "Réinitialiser votre mot de passe",
+      "enter_email": "Entrez votre adresse email pour recevoir un code de réinitialisation",
+      "enter_new_password": "Entrez votre nouveau mot de passe et le code de vérification",
+      "email": "Email",
+      "verification_code": "Code de vérification (8 chiffres)",
+      "new_password": "Nouveau mot de passe",
+      "confirm_password": "Confirmer le mot de passe",
+      "send_code": "Envoyer le code",
+      "reset_password": "Réinitialiser le mot de passe",
+      "code_sent": "Nous avons envoyé un code de vérification à 8 chiffres à",
+      "back_to_login": "Retour à la connexion",
+      "seo": {
+        "title": "Réinitialiser le mot de passe",
+        "description": "Réinitialisez votre mot de passe oublié"
+      }
+    },
+    "errors": {
+      "username_required": "Le nom d'utilisateur est requis",
+      "email_required": "L'email est requis",
+      "email_invalid": "L'email est invalide",
+      "password_required": "Le mot de passe est requis",
+      "password_too_short": "Le mot de passe doit contenir au moins 8 caractères",
+      "consent_required": "Vous devez accepter les conditions",
+      "generic_login": "Le nom d'utilisateur ou le mot de passe est incorrect",
+      "generic_sign_up": "Le nom d'utilisateur ou l'email est déjà pris",
+      "verification_code_length": "Le code doit contenir 6 caractères",
+      "generic_verify_email": "Le code de vérification est invalide",
+      "password_mismatch": "Les mots de passe ne correspondent pas",
+      "user_not_found": "Utilisateur non trouvé",
+      "too_many_attempts": "Trop de tentatives, veuillez réessayer plus tard",
+      "invalid_input": "Données d'entrée invalides",
+      "verification_code_expired": "Le code de vérification a expiré",
+      "verification_code_not_found": "Code de vérification non trouvé",
+      "verification_code_length_8": "Le code doit contenir 8 chiffres",
+      "server": "Une erreur est survenue lors du traitement de votre demande",
+      "resend_verification_email": {
+        "summary": "Erreur lors de l'envoie",
+        "detail": "Une erreur est survenue lors de l'envoi du code de vérification"
+      }
+    }
+  }
+}

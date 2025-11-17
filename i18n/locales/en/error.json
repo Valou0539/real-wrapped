@@ -1,0 +1,20 @@
+{
+  "error": {
+    "title": {
+      "default": "Something went wrong",
+      "403": "You don't have access",
+      "404": "Page not found",
+      "500": "Server error"
+    },
+    "description": {
+      "default": "Sorry, an unexpected error occurred. Try again or head back to the homepage.",
+      "403": "You don't have permission to view this page.",
+      "404": "The page you were looking for doesn't exist or has been moved.",
+      "500": "The server encountered an issue. Please try again shortly."
+    },
+    "actions": {
+      "back": "Go back",
+      "home": "Go to homepage"
+    }
+  }
+}
