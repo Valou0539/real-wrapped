@@ -1,0 +1,95 @@
+{
+  "slideshow": {
+    "common": {
+      "plays": "plays",
+      "listened": "listened",
+      "mostPlayed": "Most played"
+    },
+    "welcome": {
+      "subtitle": "Ready to relive your year?",
+      "seo": {
+        "title": "Your Wrapped",
+        "description": "Your musical year wrapped."
+      }
+    },
+    "totalTime": {
+      "title": "Your year in music",
+      "subtitle": "That's a lot of dedication!",
+      "seo": {
+        "title": "Total Listening Time",
+        "description": "See your total listening time for the year."
+      }
+    },
+    "topDay": {
+      "title": "One day stood out",
+      "subtitle": "You were really in the zone that day.",
+      "seo": {
+        "title": "Your Top Day",
+        "description": "The day you listened to music the most."
+      }
+    },
+    "totalSongs": {
+      "title": "You pressed play",
+      "subtitle": "times. That's a new soundtrack for every moment.",
+      "seo": {
+        "title": "Total Songs Played",
+        "description": "How many songs you played this year."
+      }
+    },
+    "topSong": {
+      "title": "One song was on repeat",
+      "plays": "plays",
+      "subtitle": "We know you know all the lyrics by now.",
+      "seo": {
+        "title": "Your Top Song",
+        "description": "Your most played song of the year."
+      }
+    },
+    "topSongsList": {
+      "title": "Your Top 5 Songs",
+      "seo": {
+        "title": "Your Top 5 Songs",
+        "description": "Your top 5 most played songs."
+      }
+    },
+    "topArtist": {
+      "title": "You really loved this artist",
+      "subtitle": "A true fan!",
+      "seo": {
+        "title": "Your Top Artist",
+        "description": "Your most listened to artist of the year."
+      }
+    },
+    "topArtistsList": {
+      "title": "Your Top 5 Artists",
+      "seo": {
+        "title": "Your Top 5 Artists",
+        "description": "Your top 5 most listened to artists."
+      }
+    },
+    "topGenres": {
+      "title": "Your Vibe Check",
+      "subtitle": "Eclectic taste!",
+      "seo": {
+        "title": "Your Top Genres",
+        "description": "Your most listened to music genres."
+      }
+    },
+    "summary": {
+      "title": "Wrapped Up",
+      "totalTime": "Total Time",
+      "totalSongs": "Total Songs",
+      "topGenre": "Top Genre",
+      "topSongs": "Top Songs",
+      "topArtists": "Top Artists",
+      "topArtist": "Top Artist",
+      "topSong": "Top Song",
+      "seeYou": "See you next year!",
+      "home": "Back to Home",
+      "seo": {
+        "title": "Your Wrapped Summary",
+        "description": "A summary of your musical year."
+      }
+    }
+  }
+}

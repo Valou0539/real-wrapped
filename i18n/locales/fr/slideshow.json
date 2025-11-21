@@ -1,0 +1,95 @@
+{
+  "slideshow": {
+    "common": {
+      "plays": "écoutes",
+      "listened": "écoutés",
+      "mostPlayed": "Titre phare"
+    },
+    "welcome": {
+      "subtitle": "Prêt à revivre votre année ?",
+      "seo": {
+        "title": "Votre Wrapped",
+        "description": "Le récapitulatif de votre année musicale."
+      }
+    },
+    "totalTime": {
+      "title": "Votre année en musique",
+      "subtitle": "Quel dévouement !",
+      "seo": {
+        "title": "Temps d'écoute total",
+        "description": "Découvrez votre temps d'écoute total de l'année."
+      }
+    },
+    "topDay": {
+      "title": "Un jour est sorti du lot",
+      "subtitle": "Vous étiez à fond ce jour-là.",
+      "seo": {
+        "title": "Votre jour le plus musical",
+        "description": "Le jour où vous avez le plus écouté de musique."
+      }
+    },
+    "totalSongs": {
+      "title": "Vous avez lancé la lecture",
+      "subtitle": "fois. Une bande-son pour chaque moment.",
+      "seo": {
+        "title": "Total de chansons écoutées",
+        "description": "Le nombre de chansons que vous avez écoutées cette année."
+      }
+    },
+    "topSong": {
+      "title": "Une chanson en boucle",
+      "plays": "écoutes",
+      "subtitle": "On sait que vous connaissez les paroles par cœur.",
+      "seo": {
+        "title": "Votre chanson préférée",
+        "description": "La chanson que vous avez le plus écoutée cette année."
+      }
+    },
+    "topSongsList": {
+      "title": "Votre Top 5 Chansons",
+      "seo": {
+        "title": "Votre Top 5 Chansons",
+        "description": "Vos 5 chansons les plus écoutées."
+      }
+    },
+    "topArtist": {
+      "title": "L'artiste de votre année",
+      "subtitle": "Un vrai fan !",
+      "seo": {
+        "title": "Votre artiste préféré",
+        "description": "L'artiste que vous avez le plus écouté cette année."
+      }
+    },
+    "topArtistsList": {
+      "title": "Votre Top 5 Artistes",
+      "seo": {
+        "title": "Votre Top 5 Artistes",
+        "description": "Vos 5 artistes les plus écoutés."
+      }
+    },
+    "topGenres": {
+      "title": "L'ambiance de votre année",
+      "subtitle": "Des goûts éclectiques !",
+      "seo": {
+        "title": "Vos genres préférés",
+        "description": "Les genres musicaux que vous avez le plus écoutés."
+      }
+    },
+    "summary": {
+      "title": "Résumé",
+      "totalTime": "Temps total",
+      "totalSongs": "Titres écoutés",
+      "topGenre": "Genre n°1",
+      "topSongs": "Top Titres",
+      "topArtists": "Top Artistes",
+      "topArtist": "Artiste n°1",
+      "topSong": "Titre n°1",
+      "seeYou": "À l'année prochaine !",
+      "home": "Retour à l'accueil",
+      "seo": {
+        "title": "Résumé de votre Wrapped",
+        "description": "Le résumé de votre année musicale."
+      }
+    }
+  }
+}
