@@ -1,0 +1,92 @@
+{
+  "music-history": {
+      "upload": {
+      "app": {
+        "title": "Votre Vrai Spotify Wrapped",
+        "description": "Le Wrapped de Spotify c'est bien, mais ce n'est pas toujours précis. Il manque du temps d'écoute et s'arrête tôt dans l'année. En utilisant les vraies données d'historique de votre compte, nous générons des statistiques 100% précises de votre année musicale."
+      },
+      "title": "Déposez vos fichiers d'historique",
+      "hint": "Formats acceptés : JSON uniquement",
+      "tutorial": {
+        "title": "Vous ne trouvez pas vos fichiers ?",
+        "description": "Demandez vos données dans {spotifyPrivacyLink}, attendez quelques jours et déposez les fichiers StreamingHistory_music_*.json ici.",
+        "spotify-privacy-link": "les paramètres de confidentialité de votre compte Spotify"
+      },
+      "button": "Téléverser",
+      "processing": "Récupération des genres et images en cours...",
+      "errors": {
+        "required": "Veuillez sélectionner au moins un fichier",
+        "unsupported": "Format de fichier non supporté. Seuls les fichiers JSON sont acceptés",
+        "invalid-content": "Le contenu du fichier JSON est invalide ou ne correspond pas au format d'historique musical attendu"
+      }
+    },
+    "reset": {
+      "confirm": {
+        "message": "Êtes-vous sûr de vouloir réinitialiser votre historique musical ? Cette action est irréversible.",
+        "header": "Confirmer la réinitialisation",
+        "accept": "Oui, réinitialiser",
+        "reject": "Annuler"
+      }
+    },
+    "stats": {
+      "all": "Tout",
+      "tracks": "Titres",
+      "artists": "Artistes",
+      "genres": "Genres",
+      "tracksTable": {
+        "title": "Top {count} titres",
+        "columns": {
+          "position": "#",
+          "title": "Titre",
+          "artist": "Artiste",
+          "playTime": "Temps d'écoute",
+          "plays": "Lectures",
+          "firstPlay": "Première lecture"
+        }
+      },
+      "tracksGlobal": {
+        "cards": {
+          "totalPlayTime": "Temps d'écoute total",
+          "totalSinglePlay": "Nombre de titres",
+          "totalPlayCount": "Nombre de lectures"
+        }
+      },
+      "artistsTable": {
+        "title": "Top {count} artistes",
+        "columns": {
+          "position": "#",
+          "artist": "Artiste",
+          "mostPlayedTrack": "Titre le plus écouté",
+          "playTime": "Temps d'écoute",
+          "plays": "Lectures",
+          "firstPlay": "Première lecture"
+        }
+      },
+      "artistsGlobal": {
+        "cards": {
+          "totalPlayTime": "Temps d'écoute total",
+          "totalArtists": "Nombre d'artistes",
+          "totalPlayCount": "Nombre de lectures"
+        }
+      },
+      "genresTable": {
+        "title": "Top {count} genres",
+        "columns": {
+          "position": "#",
+          "genre": "Genre",
+          "mostPlayedArtist": "Artiste le plus écouté",
+          "playTime": "Temps d'écoute",
+          "plays": "Lectures"
+        }
+      },
+      "genresGlobal": {
+        "cards": {
+          "totalPlayTime": "Temps d'écoute total",
+          "totalGenres": "Nombre de genres",
+          "totalPlayCount": "Nombre de lectures"
+        }
+      },
+      "empty": "Aucune donnée disponible"
+    }
+  }
+}

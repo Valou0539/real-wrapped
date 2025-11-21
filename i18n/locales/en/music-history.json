@@ -1,0 +1,92 @@
+{
+  "music-history": {
+    "upload": {
+      "app": {
+        "title": "Your Real Spotify Wrapped",
+        "description": "Spotify's Wrapped is great, but it's not always accurate. It misses some listening time and cuts off early in the year. By using your actual account history data, we generate 100% accurate statistics of your year in music."
+      },
+      "title": "Drop your history files",
+      "hint": "Accepted formats: JSON only",
+      "tutorial": {
+        "title": "Don't know where to find your files?",
+        "description": "Request your data from your {spotifyPrivacy}, wait a few day and drop the StreamingHistory_music_*.json files here.",
+        "spotify-privacy-link": "Spotify account privacy settings"
+      },
+      "button": "Upload",
+      "processing": "Retrieving genres and images...",
+      "errors": {
+        "required": "Please select at least one file",
+        "unsupported": "Unsupported file format. Only JSON files are accepted",
+        "invalid-content": "The JSON file content is invalid or does not match the expected music history format"
+      }
+    },
+    "reset": {
+      "confirm": {
+        "message": "Are you sure you want to reset your music history? This action is irreversible.",
+        "header": "Confirm Reset",
+        "accept": "Yes, reset",
+        "reject": "Cancel"
+      }
+    },
+    "stats": {
+      "all": "All",
+      "tracks": "Tracks",
+      "artists": "Artists",
+      "genres": "Genres",
+      "tracksTable": {
+        "title": "Top {count} tracks",
+        "columns": {
+          "position": "#",
+          "title": "Title",
+          "artist": "Artist",
+          "playTime": "Play time",
+          "plays": "Plays",
+          "firstPlay": "First play"
+        }
+      },
+      "tracksGlobal": {
+        "cards": {
+          "totalPlayTime": "Total play time",
+          "totalSinglePlay": "Total tracks",
+          "totalPlayCount": "Total play count"
+        }
+      },
+      "artistsTable": {
+        "title": "Top {count} artists",
+        "columns": {
+          "position": "#",
+          "artist": "Artist",
+          "mostPlayedTrack": "Most played track",
+          "playTime": "Play time",
+          "plays": "Plays",
+          "firstPlay": "First play"
+        }
+      },
+      "artistsGlobal": {
+        "cards": {
+          "totalPlayTime": "Total play time",
+          "totalArtists": "Total artists",
+          "totalPlayCount": "Total play count"
+        }
+      },
+      "genresTable": {
+        "title": "Top {count} genres",
+        "columns": {
+          "position": "#",
+          "genre": "Genre",
+          "mostPlayedArtist": "Most played artist",
+          "playTime": "Play time",
+          "plays": "Plays"
+        }
+      },
+      "genresGlobal": {
+        "cards": {
+          "totalPlayTime": "Total play time",
+          "totalGenres": "Total genres",
+          "totalPlayCount": "Total play count"
+        }
+      },
+      "empty": "No data available"
+    }
+  }
+}
