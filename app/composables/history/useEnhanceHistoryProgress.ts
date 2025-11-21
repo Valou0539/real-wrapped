@@ -37,6 +37,8 @@ export const useEnhanceHistoryProgress = () => {
       }
 
       if (data.done) {
+        stopTracking();
+
         musicHistoryStore.history = data.results;
 
         await musicHistoryStore.saveHistory();
@@ -46,7 +48,6 @@ export const useEnhanceHistoryProgress = () => {
 
         const localePath = useLocalePath();
         navigateTo(localePath("/slideshow"));
-        stopTracking();
       }
     };
 
