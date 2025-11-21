@@ -9,7 +9,7 @@
       "hint": "Formats acceptés : JSON uniquement",
       "tutorial": {
         "title": "Vous ne trouvez pas vos fichiers ?",
-        "description": "Demandez vos données dans {spotifyPrivacyLink}, attendez quelques jours et déposez les fichiers StreamingHistory_music_*.json ici.",
+        "description": "Demandez vos données dans {spotifyPrivacy}, attendez quelques jours et déposez les fichiers StreamingHistory_music_*.json ici.",
         "spotify-privacy-link": "les paramètres de confidentialité de votre compte Spotify"
       },
       "button": "Téléverser",
