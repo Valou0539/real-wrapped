@@ -36,14 +36,19 @@
       <div class="flex items-center justify-end gap-4 py-6">
         <LayoutSharedLangButton />
         <LayoutSharedColorTheme />
-        <Button
-          v-if="!authenticated"
-          :as="NuxtLinkLocale"
-          to="/auth/login"
-          severity="primary"
-        >
-          {{ $t("layout.topbar.login") }}
-        </Button>
+        <ClientOnly>
+          <Button
+            severity="primary"
+            v-if="isWrapped"
+            @click="
+              reset(() => {
+                mobileMenuOpen = false;
+              })
+            "
+          >
+            {{ $t("layout.topbar.new-history") }}
+          </Button>
+        </ClientOnly>
       </div>
       <div class="space-y-2 py-6">
         <NuxtLinkLocale
@@ -61,7 +66,6 @@
 
 <script lang="ts" setup>
 import { Bars3Icon } from "@heroicons/vue/24/outline";
-import { useAuthStore } from "@/stores/authStore";
 import { NuxtLinkLocale } from "#components";
 
 defineProps<{
@@ -69,6 +73,9 @@ defineProps<{
 }>();
 
 const { mobileMenuOpen } = useResponsiveMenu();
-const { authenticated } = storeToRefs(useAuthStore());
 const { title } = useAppConfig();
+
+const { reset } = useConfirmReset();
+
+const { isWrapped } = storeToRefs(useWrappedStore());
 </script>
