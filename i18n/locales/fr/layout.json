@@ -1,15 +1,17 @@
 {
   "layout": {
     "topbar": {
-      "login": "Connexion",
-      "signup": "S'inscrire",
+      "new-history": "Nouveau",
+      "show-slideshow": "Diaporama",
       "open_menu": "Ouvrir le menu principal",
       "close_menu": "Fermer le menu principal",
       "toggle_lang_menu": "Toggle language menu",
-      "toggle_profile_menu": "Toggle profile menu",
-      "profile": "Profil",
       "logout": "Déconnexion",
-      "admin": "Admin panel"
+      "nav": {
+        "tracks": "Top titres",
+        "artists": "Top artistes",
+        "genres": "Top genres"
+      }
     }
   }
 }
