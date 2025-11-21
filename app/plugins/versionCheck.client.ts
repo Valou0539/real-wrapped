@@ -4,7 +4,10 @@ export default defineNuxtPlugin(async () => {
   const appConfig = useAppConfig();
   const { processHistory } = useMusicHistoryProcessor();
 
-  if (wrappedStore.processVersion !== appConfig.processVersion) {
+  if (
+    wrappedStore.processVersion &&
+    wrappedStore.processVersion !== appConfig.processVersion
+  ) {
     console.log(
       `Version mismatch (Store: ${wrappedStore.processVersion}, App: ${appConfig.processVersion}). Reprocessing...`,
     );
