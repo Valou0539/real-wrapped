@@ -42,24 +42,24 @@ export default defineNuxtConfig({
       {
         code: "en",
         files: [
-          "en/account.json",
-          "en/authentication.json",
           "en/layout.json",
           "en/home.json",
           "en/error.json",
           "en/primevue.json",
+          "en/music-history.json",
+          "en/slideshow.json",
         ],
         name: "English",
       },
       {
         code: "fr",
         files: [
-          "fr/account.json",
-          "fr/authentication.json",
           "fr/layout.json",
           "fr/home.json",
           "fr/error.json",
           "fr/primevue.json",
+          "fr/music-history.json",
+          "fr/slideshow.json",
         ],
         name: "Français",
       },
@@ -68,10 +68,9 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      appUrl: process.env.APP_URL,
-      adminUrl: process.env.ADMIN_URL,
+      wrappedYear: "",
     },
-    apiUrl: process.env.API_URL,
+    lastfmApiKey: "",
   },
 
   css: ["~/assets/css/main.css"],

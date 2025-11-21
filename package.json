@@ -23,7 +23,7 @@
     "@tailwindcss/vite": "^4.1.12",
     "nuxt": "^4.2.0",
     "pinia": "^3.0.3",
-    "pinia-plugin-persistedstate": "^4.5.0",
+    "pinia-plugin-persistedstate": "^4.7.1",
     "primeicons": "^7.0.0",
     "primevue": "github:Valou0539/primevue#primevue-only",
     "tailwindcss": "^4.1.12",

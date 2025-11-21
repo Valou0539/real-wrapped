@@ -12,7 +12,7 @@
           <h1 class="text-contrast text-3xl font-semibold sm:text-4xl">
             {{ title }}
           </h1>
-          <p class="text-gray max-w-xl text-base">
+          <p class="text-gray max-w-xl text-center text-base">
             {{ description }}
           </p>
           <p

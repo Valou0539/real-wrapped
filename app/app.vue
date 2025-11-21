@@ -5,6 +5,7 @@
       <NuxtPage />
     </NuxtLayout>
     <Toast />
+    <ConfirmDialog />
   </Html>
 </template>
 <script lang="ts" setup>

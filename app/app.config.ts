@@ -1,3 +1,4 @@
 export default defineAppConfig({
-  title: "Nuxt Boilerplate",
+  title: "Real Wrapped",
+  processVersion: "1.0.0",
 });

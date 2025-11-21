@@ -10,17 +10,18 @@
 
 @theme static {
   --font-sans: Poppins, sans-serif;
-  --color-primary-50: oklch(0.97 0.014 254.604);
-  --color-primary-100: oklch(0.932 0.032 255.585);
-  --color-primary-200: oklch(0.882 0.059 254.128);
-  --color-primary-300: oklch(0.809 0.105 251.813);
-  --color-primary-400: oklch(0.707 0.165 254.624);
-  --color-primary-500: oklch(0.623 0.214 259.815);
-  --color-primary-600: oklch(0.546 0.245 262.881);
-  --color-primary-700: oklch(0.488 0.243 264.376);
-  --color-primary-800: oklch(0.424 0.199 265.638);
-  --color-primary-900: oklch(0.379 0.146 265.522);
-  --color-primary-950: oklch(0.282 0.091 267.935);
+
+  --color-primary-50: #f0fdf4;
+  --color-primary-100: #dbfde6;
+  --color-primary-200: #baf8cf;
+  --color-primary-300: #84f1aa;
+  --color-primary-400: #48e07d;
+  --color-primary-500: #1db954;
+  --color-primary-600: #14a547;
+  --color-primary-700: #13823b;
+  --color-primary-800: #156633;
+  --color-primary-900: #13542c;
+  --color-primary-950: #042f15;
 
   --color-surface-0: #ffffff;
   --color-surface-50: oklch(0.985 0 0);
@@ -82,7 +83,7 @@
   }
 
   .link-danger {
-    @apply text-red-600 hover:text-red-500 dark:text-red-400 dark:hover:text-red-300 font-semibold;
+    @apply font-semibold text-red-600 hover:text-red-500 dark:text-red-400 dark:hover:text-red-300;
   }
 
   /* Background utilities */
@@ -92,6 +93,19 @@
 
   .background-color {
     @apply bg-bg transition-colors duration-200;
+  }
+
+  /* Text utilities for slideshow */
+  .text-slide-title {
+    @apply text-2xl font-bold sm:text-3xl md:text-4xl;
+  }
+
+  .text-slide-value {
+    @apply text-4xl font-extrabold sm:text-5xl md:text-6xl;
+  }
+
+  .text-slide-subtitle {
+    @apply text-lg opacity-80 sm:text-xl;
   }
 }
 
