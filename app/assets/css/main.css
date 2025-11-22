@@ -11,17 +11,17 @@
 @theme static {
   --font-sans: Poppins, sans-serif;
 
-  --color-primary-50: #f0fdf4;
-  --color-primary-100: #dbfde6;
-  --color-primary-200: #baf8cf;
-  --color-primary-300: #84f1aa;
-  --color-primary-400: #48e07d;
-  --color-primary-500: #1db954;
-  --color-primary-600: #14a547;
-  --color-primary-700: #13823b;
-  --color-primary-800: #156633;
-  --color-primary-900: #13542c;
-  --color-primary-950: #042f15;
+  --color-primary-50: oklch(0.981 0.023 143.29);
+  --color-primary-100: oklch(0.95 0.061 143.61);
+  --color-primary-200: oklch(0.899 0.142 142.98);
+  --color-primary-300: oklch(0.862 0.174 142.58);
+  --color-primary-400: oklch(0.82 0.167 142.5);
+  --color-primary-500: oklch(0.779 0.158 142.61);
+  --color-primary-600: oklch(0.65 0.131 142.82);
+  --color-primary-700: oklch(0.523 0.106 142.84);
+  --color-primary-800: oklch(0.388 0.079 142.87);
+  --color-primary-900: oklch(0.262 0.053 142.24);
+  --color-primary-950: oklch(0.202 0.041 141.55);
 
   --color-surface-0: #ffffff;
   --color-surface-50: oklch(0.985 0 0);
