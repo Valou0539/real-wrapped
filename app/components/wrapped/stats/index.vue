@@ -1,11 +1,11 @@
 <template>
   <Tabs :value="category" @update:value="updateParams($event)">
-    <TabList>
+    <TabList class="bg-transparent">
       <Tab value="tracks">{{ $t("music-history.stats.tracks") }}</Tab>
       <Tab value="artists">{{ $t("music-history.stats.artists") }}</Tab>
       <Tab value="genres">{{ $t("music-history.stats.genres") }}</Tab>
     </TabList>
-    <TabPanels>
+    <TabPanels class="bg-transparent">
       <TabPanel value="tracks">
         <SharedMonthSelector :selected-month="month" />
         <WrappedStatsTracks
