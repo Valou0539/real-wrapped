@@ -38,7 +38,7 @@
         <LayoutSharedColorTheme />
         <ClientOnly>
           <Button
-            severity="primary"
+            severity="secondary"
             v-if="isWrapped"
             @click="
               reset(() => {

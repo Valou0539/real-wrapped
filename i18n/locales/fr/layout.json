@@ -12,6 +12,9 @@
         "artists": "Top artistes",
         "genres": "Top genres"
       }
+    },
+    "footer": {
+      "created_by": "Créé par"
     }
   }
 }

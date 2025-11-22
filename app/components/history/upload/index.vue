@@ -22,7 +22,7 @@
       </div>
 
       <!-- Tutorial Section -->
-      <Card class="md:w-1/3">
+      <Card class="md:w-2/5 md:shrink-0">
         <template #title>
           {{ $t("music-history.upload.tutorial.title") }}
         </template>

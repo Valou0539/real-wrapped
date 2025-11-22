@@ -55,7 +55,7 @@
 
         <div class="flex-1 overflow-hidden">
           <p
-            class="truncate text-sm font-medium text-gray-900 dark:text-gray-100"
+            class="truncate text-sm font-medium text-gray-900 dark:text-gray-100 text-wrap"
           >
             {{
               Array.from<File>($field.value as FileList)
