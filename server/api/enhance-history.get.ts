@@ -1,7 +1,8 @@
 import { LastfmTrack } from "../types/enhance-history";
+import { mergeArtistsForSameTracks } from "../utils/mergeArtists";
 
 const cache = new Map<string, any>();
-const CONCURRENCY = 100;
+const CONCURRENCY = 25;
 
 export default defineEventHandler(async (event) => {
   const res = event.node.res;
@@ -31,7 +32,10 @@ export default defineEventHandler(async (event) => {
 
   const total = job.tracks.length;
   let done = 0;
-  const results: EnhancedMusicHistoryTrack[] = [];
+  const results: (EnhancedMusicHistoryTrack & {
+    duration: string;
+    listeners: number;
+  })[] = [];
   const apiKey = useRuntimeConfig().lastfmApiKey;
 
   // Split into chunks of size CONCURRENCY
@@ -49,6 +53,8 @@ export default defineEventHandler(async (event) => {
       if (!data) {
         let genres: string[] = [];
         let cover: string = "";
+        let duration: string = "";
+        let listeners: number = 0;
 
         try {
           const response = await $fetch<LastfmTrack>(
@@ -66,25 +72,35 @@ export default defineEventHandler(async (event) => {
           const coverImage = images[images.length - 1];
 
           cover = coverImage?.["#text"] ?? "";
+
+          duration = response.track?.duration ?? "";
+          listeners = Number(response.track?.listeners ?? 0);
         } catch (error) {
           console.log(track);
           console.error(error);
           genres = [];
           cover = "";
+          duration = "";
+          listeners = 0;
         }
 
-        data = { genres, cover };
+        data = { genres, cover, duration, listeners };
         cache.set(key, data);
       }
 
       results.push({
-        ...track,
+        endTime: track.endTime,
+        trackName: track.trackName,
+        artistsName: [track.artistName],
+        msPlayed: track.msPlayed,
         genres: data.genres,
         cover: data.cover,
+        duration: data.duration,
+        listeners: data.listeners,
       });
 
       done++;
-      const percent = Math.round((done / total) * 100);
+      const percent = Math.floor((done / total) * 100);
       job.progress = percent;
       send({ progress: percent });
     });
@@ -92,8 +108,10 @@ export default defineEventHandler(async (event) => {
     await Promise.all(promises);
   }
 
-  job.result = results;
-  send({ done: true, results });
+  const mergedResults: EnhancedMusicHistoryTrack[] =
+    mergeArtistsForSameTracks(results);
+  job.result = mergedResults;
+  send({ done: true, results: mergedResults });
 
   setTimeout(() => {
     globalThis.__enhanceHistoryJobs.delete(jobId);

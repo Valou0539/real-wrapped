@@ -1,5 +1,7 @@
 export interface LastfmTrack {
   track?: {
+    duration: string;
+    listeners: string;
     album: {
       image: {
         size: string;
@@ -12,13 +14,4 @@ export interface LastfmTrack {
       }[];
     };
   };
-}
-
-export interface MusicBrainzResponse {
-  recordings: {
-    id: string;
-    tags?: {
-      name: string;
-    }[];
-  }[];
 }

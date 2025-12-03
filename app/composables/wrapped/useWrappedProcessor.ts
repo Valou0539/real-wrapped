@@ -28,7 +28,7 @@ export const useMusicHistoryProcessor = () => {
 
     // Top Lists
     const topArtists = allArtists.slice(0, 100);
-    const topGenres = allGenres.slice(0, 100);
+    const topGenres = allGenres.slice(0, 50);
     const topTracks = allTracks.slice(0, 200);
 
     // Monthly Stats

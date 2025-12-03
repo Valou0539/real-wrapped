@@ -13,7 +13,7 @@
         "spotify-privacy-link": "Spotify account privacy settings"
       },
       "button": "Upload",
-      "processing": "Retrieving genres and images...",
+      "processing": "Retrieving genres and images... Don't close your browser.",
       "errors": {
         "required": "Please select at least one file",
         "unsupported": "Unsupported file format. Only JSON files are accepted",

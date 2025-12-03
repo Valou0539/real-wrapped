@@ -5,7 +5,11 @@ export interface MusicHistoryTrack {
   msPlayed: number;
 }
 
-export interface EnhancedMusicHistoryTrack extends MusicHistoryTrack {
+export interface EnhancedMusicHistoryTrack {
+  endTime: string;
+  trackName: string;
+  artistsName: string[];
+  msPlayed: number;
   genres: string[];
   cover: string;
 }

@@ -1,6 +1,6 @@
 {
   "music-history": {
-      "upload": {
+    "upload": {
       "app": {
         "title": "Votre Vrai Spotify Wrapped",
         "description": "Le Wrapped de Spotify c'est bien, mais ce n'est pas toujours précis. Il manque du temps d'écoute et s'arrête tôt dans l'année. En utilisant les vraies données d'historique de votre compte, nous générons des statistiques 100% précises de votre année musicale."
@@ -13,7 +13,7 @@
         "spotify-privacy-link": "les paramètres de confidentialité de votre compte Spotify"
       },
       "button": "Téléverser",
-      "processing": "Récupération des genres et images en cours...",
+      "processing": "Récupération des genres et images en cours... Ne fermez pas votre navigateur.",
       "errors": {
         "required": "Veuillez sélectionner au moins un fichier",
         "unsupported": "Format de fichier non supporté. Seuls les fichiers JSON sont acceptés",
