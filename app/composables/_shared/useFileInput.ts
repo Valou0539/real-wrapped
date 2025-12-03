@@ -35,10 +35,6 @@ export const useFileInput = () => {
     field.onChange(fileEventToInputEvent(event));
   };
 
-  const triggerFileInput = () => {
-    fileInput.value?.click();
-  };
-
   const clearFile = (field: any) => {
     if (fileInput.value) {
       fileInput.value.value = "";
@@ -57,7 +53,6 @@ export const useFileInput = () => {
     handleDragLeave,
     handleDrop,
     handleFileChange,
-    triggerFileInput,
     clearFile,
   };
 };

@@ -1,6 +1,7 @@
 <template>
   <FormField :name="name" v-slot="$field">
-    <div
+    <label
+      :for="inputId"
       :class="[
         'relative flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed p-8 transition-all duration-200',
         {
@@ -14,16 +15,16 @@
       @dragover.prevent="handleDragOver"
       @dragleave.prevent="handleDragLeave"
       @drop.prevent="handleDrop($event, $field)"
-      @click="triggerFileInput"
     >
       <input
+        :id="inputId"
         ref="fileInput"
         type="file"
         :accept="accept"
         :multiple="multiple"
-        class="hidden"
+        class="sr-only"
         @change="handleFileChange($event, $field)"
-      />
+      /> 
 
       <div v-if="!$field.value" class="flex flex-col items-center gap-4">
         <div class="bg-primary-100 dark:bg-primary-900/30 rounded-full p-4">
@@ -75,7 +76,7 @@
           @click.stop="clearFile($field)"
         />
       </div>
-    </div>
+    </label>
   </FormField>
 </template>
 
@@ -99,6 +100,8 @@ withDefaults(
   },
 );
 
+const inputId = useId();
+
 const {
   fileInput,
   isDragOver,
@@ -106,7 +109,6 @@ const {
   handleDragLeave,
   handleDrop,
   handleFileChange,
-  triggerFileInput,
   clearFile,
 } = useFileInput();
 </script>
