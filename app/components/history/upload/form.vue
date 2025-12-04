@@ -32,9 +32,6 @@
 import { Form as PrimevueForm } from "@primevue/forms";
 import type { FormSubmitEvent } from "@primevue/forms";
 import type { UploadHistoryFormValues } from "~/types/history";
-const emit = defineEmits<{ (e: "processStart"): void }>();
 
-const { resolver, initialValues, submit, loading } = useUploadHistoryForm(() =>
-  emit("processStart"),
-);
+const { resolver, initialValues, submit, loading } = useUploadHistoryForm();
 </script>

@@ -1,8 +1,4 @@
-interface EnhanceHistoryJob {
-  tracks: MusicHistoryTrack[];
-  progress: number;
-  result: EnhancedMusicHistoryTrack[] | null;
-}
+import type { EnhanceHistoryJob } from "../services/enhance-history/types";
 
 declare global {
   var __enhanceHistoryJobs: Map<string, EnhanceHistoryJob>;

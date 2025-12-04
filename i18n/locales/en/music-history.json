@@ -13,7 +13,8 @@
         "spotify-privacy-link": "Spotify account privacy settings"
       },
       "button": "Upload",
-      "processing": "Retrieving genres and images... Don't close your browser.",
+      "processing": "Retrieving genres and images... You can come back later.",
+      "queue": "Your request is queued, {count} person ahead of you | Your request is queued, {count} people ahead of you",
       "errors": {
         "required": "Please select at least one file",
         "unsupported": "Unsupported file format. Only JSON files are accepted",

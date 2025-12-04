@@ -1,5 +1,5 @@
 <template>
-  <div v-if="!processing" class="space-y-12">
+  <div v-if="!jobId" class="space-y-12">
     <!-- App Description -->
     <div class="text-center">
       <h1 class="mb-4 text-4xl font-extrabold tracking-tight">
@@ -18,7 +18,7 @@
         <h2 class="mb-6 text-xl font-bold">
           {{ $t("music-history.upload.title") }}
         </h2>
-        <HistoryUploadForm @processStart="processing = true" />
+        <HistoryUploadForm />
       </div>
 
       <!-- Tutorial Section -->
@@ -51,5 +51,5 @@
 </template>
 
 <script lang="ts" setup>
-const processing = ref(false);
+const { jobId } = storeToRefs(useMusicHistoryStore());
 </script>

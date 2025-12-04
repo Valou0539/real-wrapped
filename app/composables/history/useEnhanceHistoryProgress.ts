@@ -1,15 +1,39 @@
+interface JobState {
+  jobId: string;
+  status: "pending" | "processing" | "completed" | "error";
+  progress: number;
+  result: EnhancedMusicHistoryTrack[] | null;
+  error?: string;
+  queuePosition?: number;
+}
+
+const POLLING_INTERVAL = 10000;
+
 /**
- * Composable pour suivre la progression de l'enrichissement de l'historique musical via SSE
+ * Composable pour suivre la progression de l'enrichissement de l'historique musical via polling
  */
 export const useEnhanceHistoryProgress = () => {
   const progress = ref(0);
+  const queuePosition = ref<number | undefined>();
   const musicHistoryStore = useMusicHistoryStore();
   const error = ref<string | undefined>();
 
-  let sse: EventSource | null = null;
+  let pollingInterval: ReturnType<typeof setInterval> | null = null;
 
   /**
-   * Démarre l'écoute SSE pour suivre la progression
+   * Récupère l'état du job
+   */
+  const fetchJobState = async (jobId: string): Promise<JobState | null> => {
+    try {
+      return await $fetch<JobState>(`/api/enhance-history?jobId=${jobId}`);
+    } catch (err) {
+      console.error("Polling error:", err);
+      return null;
+    }
+  };
+
+  /**
+   * Démarre le polling pour suivre la progression
    */
   const startTracking = () => {
     const jobId = musicHistoryStore.jobId;
@@ -20,52 +44,51 @@ export const useEnhanceHistoryProgress = () => {
       return;
     }
 
-    sse = new EventSource(`/api/enhance-history?jobId=${jobId}`);
+    const runCheck = async () => {
+      const state = await fetchJobState(jobId);
 
-    sse.onmessage = async (event) => {
-      const data = JSON.parse(event.data);
-
-      if (data.error) {
-        error.value = data.error;
-        console.error("SSE Error:", data.error);
+      if (!state) {
+        error.value = "Failed to fetch job state";
         stopTracking();
         return;
       }
 
-      if (data.progress !== undefined) {
-        progress.value = data.progress;
+      progress.value = state.progress;
+      queuePosition.value = state.queuePosition;
+
+      if (state.status === "error") {
+        error.value = state.error ?? "Unknown error";
+        stopTracking();
+        return;
       }
 
-      if (data.done) {
+      if (state.status === "completed" && state.result) {
         stopTracking();
 
-        musicHistoryStore.history = data.results;
-
+        musicHistoryStore.history = state.result;
         await musicHistoryStore.saveHistory();
 
         const { processHistory } = useMusicHistoryProcessor();
-        processHistory(data.results);
+        processHistory(state.result);
 
         const localePath = useLocalePath();
         navigateTo(localePath("/slideshow"));
       }
     };
 
-    sse.onerror = (err) => {
-      error.value = "SSE Connection Error";
-      console.error("SSE Connection Error:", err);
-      stopTracking();
-    };
+    runCheck();
+    pollingInterval = setInterval(runCheck, POLLING_INTERVAL);
   };
 
   /**
-   * Arrête l'écoute SSE
+   * Arrête le polling
    */
   const stopTracking = () => {
-    if (sse) {
-      sse.close();
-      sse = null;
+    if (pollingInterval) {
+      clearInterval(pollingInterval);
+      pollingInterval = null;
     }
+    musicHistoryStore.jobId = undefined;
   };
 
   // Cleanup automatique au démontage
@@ -75,6 +98,7 @@ export const useEnhanceHistoryProgress = () => {
 
   return {
     progress: readonly(progress),
+    queuePosition: readonly(queuePosition),
     error: readonly(error),
     startTracking,
     stopTracking,

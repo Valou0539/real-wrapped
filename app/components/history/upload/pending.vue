@@ -14,15 +14,26 @@
     <div class="flex w-full flex-col gap-2">
       <ProgressBar :value="progress" class="h-2 w-full" :show-value="false" />
       <p class="text-surface-400 dark:text-surface-400 text-center font-medium">
-        {{ $t("music-history.upload.processing") }}
-        <span class="text-primary-500">{{ progress }}%</span>
+        <template v-if="queuePosition">
+          {{
+            $t(
+              "music-history.upload.queue",
+              { count: queuePosition },
+              queuePosition,
+            )
+          }}
+        </template>
+        <template v-else>
+          {{ $t("music-history.upload.processing") }}
+          <span class="text-primary-500">{{ progress }}%</span>
+        </template>
       </p>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-const { progress, startTracking } = useEnhanceHistoryProgress();
+const { progress, queuePosition, startTracking } = useEnhanceHistoryProgress();
 
 onMounted(() => {
   startTracking();
