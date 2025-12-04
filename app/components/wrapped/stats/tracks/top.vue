@@ -23,10 +23,11 @@
           <template #body="{ data }">
             <div class="flex items-center gap-3">
               <img
-                v-if="data.cover"
+                v-if="data.cover && !data.coverError"
                 :src="data.cover"
                 alt="cover"
                 class="size-10 shrink-0 rounded object-cover"
+                @error="data.coverError = true"
               />
               <div v-else class="size-10 shrink-0 rounded bg-gray-200"></div>
               <span class="font-medium">{{ data.trackName }}</span>
