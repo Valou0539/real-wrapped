@@ -1,7 +1,5 @@
 export interface LastfmTrack {
   track?: {
-    duration: string;
-    listeners: string;
     album: {
       image: {
         size: string;

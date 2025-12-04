@@ -31,40 +31,38 @@ export const computeTopArtists = (
   const map = history.reduce<
     Record<string, TopArtist & { trackStats: Record<string, number> }>
   >((acc, track) => {
+    const artist = track.artistName;
     const trackName = track.trackName;
 
-    // Comptabiliser le morceau pour chaque artiste
-    for (const artist of track.artistsName) {
-      if (!acc[artist]) {
-        acc[artist] = {
-          artistName: artist,
-          msPlayed: track.msPlayed,
-          playCount: 1,
-          mostPlayedTrack: trackName,
-          firstPlayDate: track.endTime,
-          trackStats: { [trackName]: track.msPlayed },
-        };
-      } else {
-        const current = acc[artist];
+    if (!acc[artist]) {
+      acc[artist] = {
+        artistName: artist,
+        msPlayed: track.msPlayed,
+        playCount: 1,
+        mostPlayedTrack: trackName,
+        firstPlayDate: track.endTime,
+        trackStats: { [trackName]: track.msPlayed },
+      };
+    } else {
+      const current = acc[artist];
 
-        current.msPlayed += track.msPlayed;
-        current.playCount += 1;
+      current.msPlayed += track.msPlayed;
+      current.playCount += 1;
 
-        // Mise à jour des stats de morceaux
-        current.trackStats[trackName] =
-          (current.trackStats[trackName] || 0) + track.msPlayed;
+      // Mise à jour des stats de morceaux
+      current.trackStats[trackName] =
+        (current.trackStats[trackName] || 0) + track.msPlayed;
 
-        // Recalcul du top morceau total
-        const [topTrack] = Object.entries(current.trackStats).sort(
-          (a, b) => b[1] - a[1],
-        )[0] as [string, number];
+      // Recalcul du top morceau total
+      const [topTrack] = Object.entries(current.trackStats).sort(
+        (a, b) => b[1] - a[1],
+      )[0] as [string, number];
 
-        current.mostPlayedTrack = topTrack;
+      current.mostPlayedTrack = topTrack;
 
-        // Mise à jour date du premier play
-        if (new Date(track.endTime) < new Date(current.firstPlayDate)) {
-          current.firstPlayDate = track.endTime;
-        }
+      // Mise à jour date du premier play
+      if (new Date(track.endTime) < new Date(current.firstPlayDate)) {
+        current.firstPlayDate = track.endTime;
       }
     }
 
@@ -82,12 +80,12 @@ export const computeTopTracks = (
   if (!history.length) return [];
 
   const map = history.reduce<Record<string, TopTrack>>((acc, track) => {
-    const key = `${track.artistsName.sort().join("::")}::${track.trackName}`;
+    const key = `${track.artistName}::${track.trackName}`;
 
     if (!acc[key]) {
       acc[key] = {
         trackName: track.trackName,
-        artistName: track.artistsName.sort().join(", "),
+        artistName: track.artistName,
         msPlayed: track.msPlayed,
         playCount: 1,
         firstPlayDate: track.endTime,
@@ -126,17 +124,13 @@ export const computeTopGenres = (
         acc[genre] = {
           msPlayed: track.msPlayed,
           playCount: 1,
-          artists: {},
+          artists: { [track.artistName]: track.msPlayed },
         };
       } else {
         acc[genre].msPlayed += track.msPlayed;
         acc[genre].playCount += 1;
-      }
-
-      // Ajouter une entrée par artiste individuel
-      for (const artist of track.artistsName) {
-        acc[genre].artists[artist] =
-          (acc[genre].artists[artist] ?? 0) + track.msPlayed;
+        acc[genre].artists[track.artistName] =
+          (acc[genre].artists[track.artistName] ?? 0) + track.msPlayed;
       }
     });
 
