@@ -11,15 +11,11 @@ const createTrack = (
   overrides: Partial<EnhancedMusicHistoryTrack>,
 ): EnhancedMusicHistoryTrack => ({
   endTime: "2023-01-01T12:00:00Z",
-  artistName: "Artist A",
+  artistsName: ["Artist A"],
   trackName: "Track 1",
   msPlayed: 100000, // 100s
   genres: ["Pop"],
-  platform: "spotify",
-  spotifyTrackUri: "spotify:track:1",
-  isShuffle: false,
-  isSkipped: false,
-  timestamp: new Date("2023-01-01T12:00:00Z").getTime(),
+  cover: "",
   ...overrides,
 });
 
@@ -28,28 +24,28 @@ describe("wrapped utils", () => {
     createTrack({
       endTime: "2023-01-01T10:00:00Z",
       msPlayed: 60000,
-      artistName: "Artist A",
+      artistsName: ["Artist A"],
       trackName: "Track A1",
       genres: ["Pop", "Rock"],
     }),
     createTrack({
       endTime: "2023-01-01T14:00:00Z",
       msPlayed: 40000,
-      artistName: "Artist A",
+      artistsName: ["Artist A"],
       trackName: "Track A1",
       genres: ["Pop", "Rock"],
     }),
     createTrack({
       endTime: "2023-01-02T10:00:00Z",
       msPlayed: 50000,
-      artistName: "Artist B",
+      artistsName: ["Artist B"],
       trackName: "Track B1",
       genres: ["Jazz"],
     }),
     createTrack({
       endTime: "2023-01-02T12:00:00Z",
       msPlayed: 150000,
-      artistName: "Artist B",
+      artistsName: ["Artist B"],
       trackName: "Track B2",
       genres: ["Jazz"],
     }),
