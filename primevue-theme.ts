@@ -437,10 +437,10 @@ export const PrimeVuePreset = definePreset(Aura, {
           950: "var(--color-surface-950)",
         },
         primary: {
-          color: "{primary.700}",
-          contrastColor: "#ffffff",
-          hoverColor: "{primary.600}",
-          activeColor: "{primary.600}",
+          color: "{primary.500}",
+          contrastColor: "#000000",
+          hoverColor: "{primary.400}",
+          activeColor: "{primary.400}",
         },
         highlight: {
           background: "{primary.50}",
