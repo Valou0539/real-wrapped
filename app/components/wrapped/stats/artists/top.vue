@@ -49,7 +49,7 @@
           :header="$t('music-history.stats.artistsTable.columns.firstPlay')"
         >
           <template #body="{ data }">
-            {{ new Date(data.firstPlayDate).toLocaleDateString() }}
+            {{ formatDate(data.firstPlayDate, $i18n.locale) }}
           </template>
         </Column>
       </DataTable>

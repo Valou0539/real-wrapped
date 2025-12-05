@@ -11,13 +11,14 @@ export const formatDuration = (ms: number): string => {
 
 export const formatDate = (
   dateString: string,
-  locale: string = "en-US",
+  locale: Intl.LocalesArgument = "en-US",
+  formatOptions: Intl.DateTimeFormatOptions = {
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+  },
 ): string => {
   if (!dateString) return "";
   const date = new Date(dateString);
-  return new Intl.DateTimeFormat(locale, {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-  }).format(date);
+  return new Intl.DateTimeFormat(locale, formatOptions).format(date);
 };

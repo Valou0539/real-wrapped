@@ -31,7 +31,13 @@ useSeoMeta({
 });
 
 const formattedDate = computed(() =>
-  store.topDate ? formatDate(store.topDate.day, locale.value) : "",
+  store.topDate
+    ? formatDate(store.topDate.day, locale.value, {
+        weekday: "long",
+        month: "long",
+        day: "numeric",
+      })
+    : "",
 );
 const formattedDuration = computed(() =>
   store.topDate ? formatDuration(store.topDate.msPlayed) : "",
