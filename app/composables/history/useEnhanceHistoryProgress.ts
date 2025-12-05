@@ -81,13 +81,20 @@ export const useEnhanceHistoryProgress = () => {
   };
 
   /**
-   * Arrête le polling
+   * Arrête le polling sans effacer le jobId
    */
-  const stopTracking = () => {
+  const stopPolling = () => {
     if (pollingInterval) {
       clearInterval(pollingInterval);
       pollingInterval = null;
     }
+  };
+
+  /**
+   * Arrête le polling et efface le jobId (job terminé ou annulé)
+   */
+  const stopTracking = () => {
+    stopPolling();
     musicHistoryStore.jobId = undefined;
   };
 
@@ -111,9 +118,9 @@ export const useEnhanceHistoryProgress = () => {
     }
   };
 
-  // Cleanup automatique au démontage
+  // Cleanup automatique au démontage (arrête le polling mais garde le jobId)
   onBeforeUnmount(() => {
-    stopTracking();
+    stopPolling();
   });
 
   return {
