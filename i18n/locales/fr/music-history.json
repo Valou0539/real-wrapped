@@ -15,6 +15,7 @@
       "button": "Téléverser",
       "processing": "Récupération des genres et images en cours... Vous pouvez revenir plus tard.",
       "queue": "Votre traitement est en attente, il reste {count} personne devant vous | Votre traitement est en attente, il reste {count} personnes devant vous",
+      "cancel": "Annuler",
       "errors": {
         "required": "Veuillez sélectionner au moins un fichier",
         "unsupported": "Format de fichier non supporté. Seuls les fichiers JSON sont acceptés",

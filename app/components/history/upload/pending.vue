@@ -29,11 +29,30 @@
         </template>
       </p>
     </div>
+
+    <!-- Cancel Button (only for pending jobs) -->
+    <Button
+      v-if="queuePosition"
+      severity="secondary"
+      outlined
+      :loading="cancelling"
+      @click="handleCancel"
+    >
+      {{ $t("music-history.upload.cancel") }}
+    </Button>
   </div>
 </template>
 
 <script setup lang="ts">
-const { progress, queuePosition, startTracking } = useEnhanceHistoryProgress();
+const { progress, queuePosition, startTracking, cancelJob } =
+  useEnhanceHistoryProgress();
+const cancelling = ref(false);
+
+const handleCancel = async () => {
+  cancelling.value = true;
+  await cancelJob();
+  cancelling.value = false;
+};
 
 onMounted(() => {
   startTracking();

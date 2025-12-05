@@ -91,6 +91,26 @@ export const useEnhanceHistoryProgress = () => {
     musicHistoryStore.jobId = undefined;
   };
 
+  /**
+   * Annule le job en cours (uniquement si en attente)
+   */
+  const cancelJob = async (): Promise<boolean> => {
+    const jobId = musicHistoryStore.jobId;
+
+    if (!jobId) {
+      return false;
+    }
+
+    try {
+      await useCancelJobRequest().execute(jobId);
+      stopTracking();
+      return true;
+    } catch (err) {
+      console.error("Failed to cancel job:", err);
+      return false;
+    }
+  };
+
   // Cleanup automatique au démontage
   onBeforeUnmount(() => {
     stopTracking();
@@ -102,5 +122,6 @@ export const useEnhanceHistoryProgress = () => {
     error: readonly(error),
     startTracking,
     stopTracking,
+    cancelJob,
   };
 };
