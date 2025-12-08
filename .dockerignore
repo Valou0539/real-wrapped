@@ -1,0 +1,23 @@
+# Dependencies
+node_modules
+
+# Builds
+.nuxt
+.output
+
+# VCS
+.git
+.gitea
+.github
+.gitignore
+
+# Env files
+.env
+.env.*
+
+# Editor/OS
+.DS_Store
+*.log
+
+# Docker
+Dockerfile
