@@ -1,0 +1,55 @@
+name: Publish Docker Image
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  docker:
+    # Adjust this label to match your Gitea runner (e.g., ubuntu-latest)
+    runs-on: self-hosted
+    container:
+      image: node:25
+    env:
+      # Configure these secrets in your Gitea repo: Settings → Secrets
+      REGISTRY_HOST: ${{ vars.DOMAIN }}
+      REGISTRY_USERNAME: ${{ secrets.ACTIONS_USERNAME }}
+      REGISTRY_PASSWORD: ${{ secrets.ACTIONS_TOKEN }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Read version from package.json
+        id: version
+        run: |
+          VERSION=$(awk -F '"' '/"version"\s*:/ {print $4; exit}' package.json)
+          if [ -z "$VERSION" ]; then echo "Failed to parse version from package.json" >&2; exit 1; fi
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Compute image name and tags
+        run: |
+          REPO=$(echo "$GITHUB_REPOSITORY" | tr '[:upper:]' '[:lower:]')
+          IMAGE="$REGISTRY_HOST/$REPO"
+          echo "IMAGE=$IMAGE" >> $GITHUB_ENV
+          echo "Will push $IMAGE:$VERSION and $IMAGE:latest"
+
+      - name: Install Docker CLI
+        run: |
+          apt-get update && apt-get install -y docker.io
+
+      - name: Docker login
+        run: |
+          echo "$REGISTRY_PASSWORD" | docker login "$REGISTRY_HOST" -u "$REGISTRY_USERNAME" --password-stdin
+
+      - name: Build image
+        run: |
+          docker build \
+            -t "$IMAGE:$VERSION" \
+            -t "$IMAGE:latest" \
+            .
+
+      - name: Push image
+        run: |
+          docker push "$IMAGE:$VERSION"
+          docker push "$IMAGE:latest"
