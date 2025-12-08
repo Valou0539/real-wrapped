@@ -22,8 +22,10 @@ describe("formatters", () => {
     it("formats date correctly with default locale", () => {
       const date = "2023-10-25";
       const formatted = formatDate(date, "en-US");
-      expect(formatted).toContain("October");
-      expect(formatted).toContain("25");
+      expect(formatted).toBe("10/25/2023");
+
+      const frFormatted = formatDate(date, "fr-FR");
+      expect(frFormatted).toBe("25/10/2023");
     });
 
     it("returns empty string for empty input", () => {
