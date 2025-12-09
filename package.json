@@ -1,6 +1,6 @@
 {
   "name": "real-wrapped",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "private": true,
   "type": "module",
   "scripts": {
@@ -44,6 +44,7 @@
     "prettier-plugin-tailwindcss": "^0.6.11"
   },
   "overrides": {
-    "vue": "latest"
+    "vue": "latest",
+    "serialize-javascript": "^7.0.3"
   }
 }
