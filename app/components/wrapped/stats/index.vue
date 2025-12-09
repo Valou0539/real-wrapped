@@ -69,6 +69,7 @@ const playCount = computed(() => {
 const updateParams = (value: string | number) => {
   router.push({
     query: {
+      ...route.query,
       category: value,
     },
   });

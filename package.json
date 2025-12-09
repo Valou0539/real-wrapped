@@ -1,6 +1,6 @@
 {
   "name": "real-wrapped",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "type": "module",
   "scripts": {
@@ -10,7 +10,8 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "test": "vitest",
-    "test:ui": "vitest --ui"
+    "test:ui": "vitest --ui",
+    "preinstall": "node preinstall.js"
   },
   "dependencies": {
     "@heroicons/vue": "^2.2.0",

@@ -28,6 +28,7 @@
                 alt="cover"
                 class="size-10 shrink-0 rounded object-cover"
                 @error="data.coverError = true"
+                loading="lazy"
               />
               <div v-else class="size-10 shrink-0 rounded bg-gray-200"></div>
               <span class="font-medium">{{ data.trackName }}</span>
