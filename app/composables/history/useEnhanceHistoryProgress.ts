@@ -7,25 +7,32 @@ interface JobState {
   queuePosition?: number;
 }
 
+interface TrackingSession {
+  jobId: string;
+  jobYear: number;
+  checking: boolean;
+}
+
 const POLLING_INTERVAL = 10000;
 
 /**
  * Composable pour suivre la progression de l'enrichissement de l'historique musical via polling
  */
-export const useEnhanceHistoryProgress = () => {
+export const useEnhanceHistoryProgress = (jobId: string) => {
   const progress = ref(0);
   const queuePosition = ref<number | undefined>();
   const musicHistoryStore = useMusicHistoryStore();
   const error = ref<string | undefined>();
 
+  let tracking: TrackingSession | null = null;
   let pollingInterval: ReturnType<typeof setInterval> | null = null;
 
   /**
    * Récupère l'état du job
    */
-  const fetchJobState = async (jobId: string): Promise<JobState | null> => {
+  const fetchJobState = async (id: string): Promise<JobState | null> => {
     try {
-      return await $fetch<JobState>(`/api/enhance-history?jobId=${jobId}`);
+      return await $fetch<JobState>(`/api/enhance-history?jobId=${id}`);
     } catch (err) {
       console.error("Polling error:", err);
       return null;
@@ -36,43 +43,71 @@ export const useEnhanceHistoryProgress = () => {
    * Démarre le polling pour suivre la progression
    */
   const startTracking = () => {
-    const jobId = musicHistoryStore.jobId;
+    const jobYear = musicHistoryStore.jobs[jobId];
 
-    if (!jobId) {
-      error.value = "No jobId found in store";
-      console.error(error.value);
+    if (jobYear === undefined) {
+      error.value = "music-history.upload.errors.missing-job";
+      console.error("No pending job found in store");
       return;
     }
 
+    invalidateTracking();
+    error.value = undefined;
+
+    const session: TrackingSession = { jobId, jobYear, checking: false };
+    tracking = session;
+
+    const isCurrent = () =>
+      tracking === session && musicHistoryStore.jobs[jobId] === jobYear;
+
     const runCheck = async () => {
-      const state = await fetchJobState(jobId);
+      if (!isCurrent() || session.checking) return;
+      session.checking = true;
 
-      if (!state) {
-        error.value = "Failed to fetch job state";
-        stopTracking();
-        return;
-      }
+      try {
+        const state = await fetchJobState(jobId);
+        if (!isCurrent()) return;
 
-      progress.value = state.progress;
-      queuePosition.value = state.queuePosition;
+        if (!state) {
+          error.value = "music-history.upload.errors.fetch-job";
+          stopPolling();
+          return;
+        }
 
-      if (state.status === "error") {
-        error.value = state.error ?? "Unknown error";
-        stopTracking();
-        return;
-      }
+        progress.value = state.progress;
+        queuePosition.value = state.queuePosition;
 
-      if (state.status === "completed" && state.result) {
-        stopTracking();
+        if (state.status === "error") {
+          error.value = "music-history.upload.errors.job-failed";
+          stopTracking();
+          return;
+        }
 
-        musicHistoryStore.history = state.result;
-        await musicHistoryStore.saveHistory();
+        if (state.status === "completed" && state.result) {
+          stopPolling();
 
-        const { processHistory } = useMusicHistoryProcessor();
-        processHistory(state.result);
+          await musicHistoryStore.saveYearHistory(jobYear, state.result);
+          if (!isCurrent()) return;
 
-        const localePath = useLocalePath();
-        navigateTo(localePath("/slideshow"));
+          const { processHistory } = useMusicHistoryProcessor();
+          if (musicHistoryStore.history) {
+            processHistory(musicHistoryStore.history);
+          }
+
+          musicHistoryStore.isImporting = false;
+          stopTracking();
+
+          const localePath = useLocalePath();
+          navigateTo(localePath("/slideshow"));
+        }
+      } catch (err) {
+        if (!isCurrent()) return;
+
+        console.error("Failed to complete history import:", err);
+        error.value = "music-history.upload.errors.save-job";
+        stopPolling();
+      } finally {
+        session.checking = false;
       }
     };
 
@@ -81,7 +116,7 @@ export const useEnhanceHistoryProgress = () => {
   };
 
   /**
-   * Arrête le polling sans effacer le jobId
+   * Arrête le polling sans effacer le job
    */
   const stopPolling = () => {
     if (pollingInterval) {
@@ -90,21 +125,24 @@ export const useEnhanceHistoryProgress = () => {
     }
   };
 
+  const invalidateTracking = () => {
+    tracking = null;
+    stopPolling();
+  };
+
   /**
-   * Arrête le polling et efface le jobId (job terminé ou annulé)
+   * Arrête le polling et efface le job (job terminé ou annulé)
    */
   const stopTracking = () => {
-    stopPolling();
-    musicHistoryStore.jobId = undefined;
+    invalidateTracking();
+    delete musicHistoryStore.jobs[jobId];
   };
 
   /**
    * Annule le job en cours (uniquement si en attente)
    */
   const cancelJob = async (): Promise<boolean> => {
-    const jobId = musicHistoryStore.jobId;
-
-    if (!jobId) {
+    if (musicHistoryStore.jobs[jobId] === undefined) {
       return false;
     }
 
@@ -118,9 +156,9 @@ export const useEnhanceHistoryProgress = () => {
     }
   };
 
-  // Cleanup automatique au démontage (arrête le polling mais garde le jobId)
+  // Cleanup automatique au démontage (arrête le polling mais garde le job)
   onBeforeUnmount(() => {
-    stopPolling();
+    invalidateTracking();
   });
 
   return {

@@ -1,9 +1,10 @@
 {
   "slideshow": {
     "common": {
+      "play": "play",
       "plays": "plays",
       "listened": "listened",
-      "mostPlayed": "Most played"
+      "mostPlayedTrack": "Top track: {track}"
     },
     "welcome": {
       "subtitle": "Ready to relive your year?",
@@ -15,6 +16,8 @@
     "totalTime": {
       "title": "Your year in music",
       "subtitle": "That's a lot of dedication!",
+      "daysSingular": "that's {days} day of non-stop listening",
+      "daysPlural": "that's {days} days of non-stop listening",
       "seo": {
         "title": "Total Listening Time",
         "description": "See your total listening time for the year."
@@ -23,6 +26,7 @@
     "topDay": {
       "title": "One day stood out",
       "subtitle": "You were really in the zone that day.",
+      "caption": "Each square is a day of the year. The brighter it is, the more you listened.",
       "seo": {
         "title": "Your Top Day",
         "description": "The day you listened to music the most."
@@ -30,7 +34,8 @@
     },
     "totalSongs": {
       "title": "You pressed play",
-      "subtitle": "times. That's a new soundtrack for every moment.",
+      "times": "times.",
+      "subtitle": "That's a new soundtrack for every moment.",
       "seo": {
         "title": "Total Songs Played",
         "description": "How many songs you played this year."
@@ -38,7 +43,6 @@
     },
     "topSong": {
       "title": "One song was on repeat",
-      "plays": "plays",
       "subtitle": "We know you know all the lyrics by now.",
       "seo": {
         "title": "Your Top Song",
@@ -46,7 +50,8 @@
       }
     },
     "topSongsList": {
-      "title": "Your Top 5 Songs",
+      "title": "Your Top 5",
+      "titleAccent": "Songs",
       "seo": {
         "title": "Your Top 5 Songs",
         "description": "Your top 5 most played songs."
@@ -61,10 +66,25 @@
       }
     },
     "topArtistsList": {
-      "title": "Your Top 5 Artists",
+      "title": "Your Top 5",
+      "titleAccent": "Artists",
       "seo": {
         "title": "Your Top 5 Artists",
         "description": "Your top 5 most listened to artists."
+      }
+    },
+    "topHour": {
+      "title": "Your peak listening hour",
+      "subtitle": "That's when your music takes up the most space: mostly in the {daypart}.",
+      "daypart": {
+        "morning": "morning",
+        "afternoon": "afternoon",
+        "evening": "evening",
+        "night": "night"
+      },
+      "seo": {
+        "title": "Your Peak Listening Hour",
+        "description": "The hour of the day when you listen to music the most."
       }
     },
     "topGenres": {

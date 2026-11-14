@@ -7,38 +7,88 @@ export const useUploadHistoryForm =
   (): FormComposable<UploadHistoryFormValues> => {
     const initialValues = ref<Partial<UploadHistoryFormValues>>({
       files: undefined,
+      year: getDefaultHistoryYear(),
     });
     const resolver = ref(uploadHistoryResolver);
 
     const responseError = ref<string | undefined>(undefined);
     const loading = ref(false);
 
+    const confirm = useConfirm();
+    const { t } = useI18n();
+
+    const confirmReplaceYear = (year: number) =>
+      new Promise<boolean>((resolve) => {
+        confirm.require({
+          message: t("music-history.upload.confirm-replace.message", { year }),
+          header: t("music-history.upload.confirm-replace.header"),
+          rejectProps: {
+            label: t("music-history.upload.confirm-replace.reject"),
+            unstyled: true,
+            class: "ui-btn !h-12 px-6 text-base font-bold",
+          },
+          acceptProps: {
+            label: t("music-history.upload.confirm-replace.accept"),
+            unstyled: true,
+            class: "ui-btn ui-cta !h-12 px-6 text-base font-bold",
+          },
+          accept: () => resolve(true),
+          reject: () => resolve(false),
+          onHide: () => resolve(false),
+        });
+      });
+
     const submit = async (form: FormSubmitEvent<UploadHistoryFormValues>) => {
+      const musicHistoryStore = useMusicHistoryStore();
+      if (loading.value || musicHistoryStore.isLoading) {
+        return;
+      }
+
       responseError.value = undefined;
       if (!form.valid) {
         return;
       }
 
+      const year = form.values.year;
+      if (!isHistoryYear(year)) {
+        responseError.value = "music-history.upload.errors.year";
+        return;
+      }
+
       loading.value = true;
+      musicHistoryStore.isLoading = true;
 
-      const wrappedYear = useRuntimeConfig().public.wrappedYear;
-      const tracks = (
-        await fileListToTypedObjects<MusicHistoryTrack>(form.values.files)
-      ).filter(
-        (track) =>
-          new Date(track.endTime).getFullYear() === parseInt(wrappedYear),
-      );
+      try {
+        const tracks = filterHistoryByYear(
+          await fileListToTypedObjects<MusicHistoryTrack>(form.values.files),
+          year,
+        );
+        if (tracks.length === 0) {
+          responseError.value = "music-history.upload.errors.no-tracks";
+          return;
+        }
 
-      return useEnhanceHistoryRequest()
-        .execute(tracks, {
-          onResponse: () => {
-            loading.value = false;
-          },
-        })
-        .then((data) => {
-          const musicHistoryStore = useMusicHistoryStore();
-          musicHistoryStore.jobId = data.jobId;
-        });
+        if (
+          musicHistoryStore.availableYears.includes(year) &&
+          !(await confirmReplaceYear(year))
+        ) {
+          return;
+        }
+
+        const data = await useEnhanceHistoryRequest().execute(tracks);
+
+        musicHistoryStore.importError = undefined;
+        musicHistoryStore.jobs[data.jobId] = year;
+        musicHistoryStore.isImporting = false;
+        musicHistoryStore.selectYear(year);
+        await navigateTo(useLocalePath()("/"));
+      } catch (error) {
+        console.error("Failed to start history import:", error);
+        responseError.value = "music-history.upload.errors.request";
+      } finally {
+        loading.value = false;
+        musicHistoryStore.isLoading = false;
+      }
     };
 
     return {

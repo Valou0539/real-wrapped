@@ -9,6 +9,8 @@ export const useWrappedStore = defineStore(
     const totalTracks = ref(0);
     const totalGenres = ref(0);
     const topDate = ref<TopDate | undefined>(undefined);
+    const dailyMsPlayed = ref<Record<string, number>>({});
+    const hourlyMsPlayed = ref<number[]>([]);
 
     // Detailed stats
     const topArtists = ref<TopArtist[]>([]); // Top 100
@@ -37,6 +39,8 @@ export const useWrappedStore = defineStore(
       totalTracks.value = 0;
       totalGenres.value = 0;
       topDate.value = undefined;
+      dailyMsPlayed.value = {};
+      hourlyMsPlayed.value = [];
       topArtists.value = [];
       topGenres.value = [];
       topTracks.value = [];
@@ -58,6 +62,8 @@ export const useWrappedStore = defineStore(
       totalTracks,
       totalGenres,
       topDate,
+      dailyMsPlayed,
+      hourlyMsPlayed,
       topArtists,
       topGenres,
       topTracks,

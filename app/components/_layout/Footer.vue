@@ -1,22 +1,17 @@
 <template>
-  <footer class="text-gray w-full py-6 text-center text-sm">
-    <div
-      class="flex flex-col items-center justify-center gap-1 md:flex-row md:gap-2"
+  <footer
+    class="border-wrapped-fg/15 bg-wrapped-bg font-wrapped text-wrapped-fg/80 w-full border-t px-10 py-7 text-center text-[15px]"
+  >
+    {{ appName }} &copy; {{ year }} •
+    {{ $t("layout.footer.created_by") }}
+    <a
+      href="https://valentin-gindre.fr"
+      target="_blank"
+      rel="noopener noreferrer"
+      class="hover:text-wrapped-fg underline underline-offset-2 transition-colors"
     >
-      <span>{{ appName }} &copy; {{ year }}</span>
-      <span class="hidden md:inline">•</span>
-      <span>
-        {{ $t("layout.footer.created_by") }}
-        <a
-          href="https://valentin-gindre.fr"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="hover:text-contrast underline decoration-dotted underline-offset-2 transition-colors"
-        >
-          Valentin Gindre
-        </a>
-      </span>
-    </div>
+      Valentin Gindre
+    </a>
   </footer>
 </template>
 

@@ -7,6 +7,12 @@ import z from "zod";
  */
 export const uploadHistoryResolver = zodResolver(
   z.object({
+    year: z
+      .number({ error: "music-history.upload.errors.year" })
+      .int({ error: "music-history.upload.errors.year" })
+      .min(1970, { error: "music-history.upload.errors.year" })
+      .max(9999, { error: "music-history.upload.errors.year" })
+      .optional(),
     files: z
       .any()
       .refine(

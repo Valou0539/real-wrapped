@@ -1,34 +1,47 @@
 <template>
-  <div class="flex w-full flex-col items-center justify-center p-6 text-center">
-    <h2 :style="style(0)" class="text-slide-title mb-8 font-bold">
+  <WrappedSlideshowSlide>
+    <h2
+      :style="style(100)"
+      class="slide-display mt-[clamp(1rem,4vh,3.5rem)] text-[clamp(2.6rem,12vw,4rem)]"
+    >
       {{ $t("slideshow.topGenres.title") }}
     </h2>
 
-    <div class="w-full max-w-md space-y-4">
+    <div
+      class="mt-[clamp(1.5rem,5vh,3rem)] flex flex-col gap-[clamp(1rem,3vh,1.625rem)]"
+    >
       <ClientOnly>
         <div
           v-for="(genre, index) in top5Genres"
           :key="genre.genreName"
-          :style="style(500 + index * 200)"
-          class="bg-surface-100 flex items-center rounded-lg p-3 dark:bg-white/10"
+          class="flex flex-col gap-2.5"
         >
           <div
-            class="text-primary-500 dark:text-primary-400 mr-4 w-8 text-xl font-bold sm:text-2xl"
+            :style="style(300 + index * 150)"
+            class="slide-display flex items-baseline gap-3.5 text-[clamp(1.7rem,7.5vw,2.5rem)]"
           >
-            #{{ index + 1 }}
+            <i
+              class="min-w-[1.625rem] text-[clamp(1rem,4.5vw,1.375rem)] not-italic opacity-85"
+              >{{ index + 1 }}</i
+            >
+            <span class="wrap-anywhere capitalize">{{ genre.genreName }}</span>
           </div>
-          <div class="flex-1 overflow-hidden text-left">
-            <div class="truncate font-bold capitalize sm:text-lg">
-              {{ genre.genreName }}
-            </div>
-          </div>
+          <div
+            :style="[
+              style(400 + index * 150, { transform: 'scaleX(0)' }),
+              { width: `${barWidth(genre.msPlayed)}%` },
+            ]"
+            class="h-3.5 origin-left rounded-full"
+            :class="index === 0 ? 'bg-wrapped-lime' : 'bg-wrapped-cream'"
+          />
         </div>
       </ClientOnly>
     </div>
-    <p :style="style(1500)" class="text-slide-subtitle mt-8 opacity-80">
+
+    <p :style="style(1400)" class="slide-sub mt-auto max-w-[24rem]">
       {{ $t("slideshow.topGenres.subtitle") }}
     </p>
-  </div>
+  </WrappedSlideshowSlide>
 </template>
 
 <script lang="ts" setup>
@@ -41,4 +54,7 @@ useSeoMeta({
 });
 
 const top5Genres = computed(() => store.topGenres.slice(0, 5));
+const topMs = computed(() => store.topGenres[0]?.msPlayed || 1);
+const barWidth = (ms: number) =>
+  Math.max(Math.round((ms / topMs.value) * 100), 4);
 </script>

@@ -6,14 +6,15 @@ export const useConfirmReset = () => {
     confirm.require({
       message: t("music-history.reset.confirm.message"),
       header: t("music-history.reset.confirm.header"),
-      icon: "pi pi-exclamation-triangle",
       rejectProps: {
         label: t("music-history.reset.confirm.reject"),
-        severity: "secondary",
+        unstyled: true,
+        class: "ui-btn !h-12 px-6 text-base font-bold",
       },
       acceptProps: {
         label: t("music-history.reset.confirm.accept"),
-        severity: "danger",
+        unstyled: true,
+        class: "ui-btn ui-cta !h-12 px-6 text-base font-bold",
       },
       accept: () => {
         useMusicHistoryStore().deleteHistory();

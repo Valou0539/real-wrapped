@@ -11,7 +11,8 @@
         "tracks": "Top tracks",
         "artists": "Top artists",
         "genres": "Top genres"
-      }
+      },
+      "toggle_theme": "Toggle light or dark theme"
     },
     "footer": {
       "created_by": "Created by"

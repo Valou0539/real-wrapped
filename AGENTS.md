@@ -38,10 +38,10 @@ Ce boilerplate est un projet Nuxt 4 moderne qui intègre un système d'authentif
 
 ### UI & Styling
 
-- **PrimeVue** (fork custom github:Valou0539/primevue#primevue-only) - Bibliothèque de composants UI
-- **@primevue/forms** (^4.2.5) - Gestion des formulaires
+- **PrimeVue** (^4.5.5) - Bibliothèque de composants UI
+- **@primevue/forms** (^4.5.5) - Gestion des formulaires
 - **@primevue/themes** (^4.2.5) - Système de thème
-- **@primevue/nuxt-module** (^4.2.5) - Module Nuxt pour PrimeVue
+- **@primevue/nuxt-module** (^4.5.5) - Module Nuxt pour PrimeVue
 - **Tailwind CSS** (^4.1.12) - Framework CSS utilitaire
 - **@tailwindcss/vite** (^4.1.12) - Plugin Vite pour Tailwind
 - **@nuxtjs/color-mode** (^3.5.2) - Gestion thème clair/sombre
@@ -55,7 +55,7 @@ Ce boilerplate est un projet Nuxt 4 moderne qui intègre un système d'authentif
 
 ### Validation & Formulaires
 
-- **Zod** (^3.25.17) - Validation de schémas
+- **Zod** (^4.6.7) - Validation de schémas
 
 ### Internationalisation
 
@@ -68,11 +68,11 @@ Ce boilerplate est un projet Nuxt 4 moderne qui intègre un système d'authentif
 
 ### Images
 
-- **@nuxt/image** (^1.9.0) - Optimisation d'images
+- **@nuxt/image** (^2.2.1) - Optimisation d'images
 
 ### Testing (Dev)
 
-- **@vitest/browser** (^3.1.4) - Tests browser avec Vitest
+- **@vitest/browser** (^4.1.12) - Tests browser avec Vitest
 
 ### Code Quality
 
@@ -312,6 +312,15 @@ responseError.value = handleAuthError(error, AuthErrorContext.LOGIN);
 - **Responsabilité** : Données du profil utilisateur
 - **Persistance** : sessionStorage
 
+#### musicHistoryStore (historique par année)
+
+- **Archive brute** : `histories` (shallowRef) contient tous les historiques par année, stockés dans IndexedDB sous la clé `music-history-years` via `indexedDbStorage` (écriture atomique, résolue au `oncomplete` de la transaction).
+- **Métadonnées** : seuls `jobId`, `jobYear` et `selectedYear` sont persistés dans localStorage (`pick`).
+- **Migration** : l'ancienne clé `music-history` est lue si l'archive est absente, partitionnée par année puis écrite dans `music-history-years`. L'ancienne clé n'est jamais supprimée.
+- **Classements** : les classements complets (pages artistes/genres, dialogue de recherche) passent par `buildWrappedSearchIndex` / `getWrappedEntryTracks` sur l'historique brut, et non par les tops tronqués stockés dans `wrappedStore`.
+- **Routes** : `/artists/[name]`, `/genres/[name]` et `/tracks/[artist]/[name]` (`middleware: ["wrapped"]`), liens générés avec `localePath` et le paramètre `month` conservé. La recherche est un bouton icône dans la topbar qui ouvre un dialogue.
+- **Tests** : `npm run test -- --run` (exécution unique, sans mode watch).
+
 ### 4. Authentification et sécurité
 
 #### useAuthFetch
@@ -505,9 +514,9 @@ Le projet dispose d'une suite complète de **tests unitaires** avec **100% de co
 
 ### Framework et outils
 
-- **Vitest** (^3.1.4) - Framework de test moderne et rapide
-- **@nuxt/test-utils** - Utilitaires pour tester les composables Nuxt
-- **happy-dom** - Environnement DOM léger
+- **Vitest** (^4.1.12) - Framework de test moderne et rapide
+- **@nuxt/test-utils** (^4.3.4) - Utilitaires pour tester les composables Nuxt
+- **happy-dom** (^21.0.4) - Environnement DOM léger
 - **@vitest/browser** - Tests browser interactifs
 
 ### Structure des tests
@@ -738,9 +747,17 @@ npm run test -- tests/composables/auth/forms/useLoginForm.test.ts
 # Lancer les tests d'un domaine
 npm run test -- tests/composables/auth/
 
+# Lancer une fois sans mode watch (CI / vérification)
+npm run test -- --run
+
+# Tests des resolvers music-history
+npm run test -- --run tests/constants/music-history/resolvers.test.ts
+
 # Lancer avec verbosité
 npm run test -- --reporter=verbose
 ```
+
+> Vitest 4 doit rester aligné avec Vite 8 (devDependency explicite `vite` ^8.3.5) : sinon Nuxt échoue avec `Missing field moduleType`.
 
 ### Bonnes pratiques pour les tests
 

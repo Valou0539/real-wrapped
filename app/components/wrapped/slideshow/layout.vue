@@ -1,48 +1,65 @@
 <template>
-  <main class="relative h-dvh w-full overflow-hidden">
+  <main
+    class="font-wrapped relative h-dvh w-full overflow-hidden transition-colors duration-500"
+    :style="{ backgroundColor: activeSlide?.bg, color: activeSlide?.fg }"
+  >
     <!-- Top Progress Bars & Controls -->
-    <div class="absolute left-0 top-0 z-50 flex w-full items-center gap-8 p-4">
-      <!-- Progress Bars -->
-      <div class="flex grow gap-1">
-        <NuxtLinkLocale
-          v-for="(item, index) in items"
-          :key="item.slug"
-          :to="`/slideshow/${item.slug}`"
-          class="flex-1 py-1"
-        >
-          <div class="bg-contrast/30 h-1 w-full overflow-hidden rounded-full">
-            <div
-              class="bg-contrast h-full"
-              :class="{
-                'w-full': index < currentIndex,
-                'w-0': index > currentIndex || !mounted,
-                'animate-progress': index === currentIndex && mounted,
-              }"
-              :style="
-                index === currentIndex
-                  ? {
-                      animationDuration: `${item.duration + 500}ms`,
-                    }
-                  : {}
-              "
-            />
-          </div>
-        </NuxtLinkLocale>
-      </div>
+    <div class="absolute left-0 top-0 z-50 flex w-full flex-col gap-3.5 p-4">
+      <div class="flex items-center gap-8">
+        <!-- Progress Bars -->
+        <div class="flex grow gap-1">
+          <NuxtLinkLocale
+            v-for="(item, index) in items"
+            :key="item.slug"
+            :to="`/slideshow/${item.slug}`"
+            class="flex-1 py-1"
+          >
+            <div class="bg-current/25 h-1 w-full overflow-hidden rounded-full">
+              <div
+                class="h-full bg-current"
+                :class="{
+                  'w-full': index < currentIndex,
+                  'w-0': index > currentIndex || !mounted,
+                  'animate-progress': index === currentIndex && mounted,
+                }"
+                :style="
+                  index === currentIndex
+                    ? {
+                        animationDuration: `${item.duration + 500}ms`,
+                      }
+                    : {}
+                "
+              />
+            </div>
+          </NuxtLinkLocale>
+        </div>
 
-      <!-- Header Controls (Pause/Close) -->
-      <div class="flex shrink-0 items-center justify-end gap-2">
-        <Button rounded text severity="contrast" @click="togglePause">
-          <template #icon>
-            <component :is="isPaused ? PlayIcon : PauseIcon" class="size-5" />
-          </template>
-        </Button>
-        <LayoutSharedColorTheme />
-        <Button :as="NuxtLinkLocale" rounded text severity="contrast" to="/">
-          <template #icon>
-            <component :is="XMarkIcon" class="size-5" />
-          </template>
-        </Button>
+        <!-- Header Controls (Pause/Close) -->
+        <div class="flex shrink-0 items-center justify-end gap-2">
+          <Button
+            rounded
+            text
+            severity="contrast"
+            class="text-inherit"
+            @click="togglePause"
+          >
+            <template #icon>
+              <component :is="isPaused ? PlayIcon : PauseIcon" class="size-5" />
+            </template>
+          </Button>
+          <Button
+            :as="NuxtLinkLocale"
+            rounded
+            text
+            severity="contrast"
+            class="text-inherit"
+            to="/"
+          >
+            <template #icon>
+              <component :is="XMarkIcon" class="size-5" />
+            </template>
+          </Button>
+        </div>
       </div>
     </div>
 
@@ -102,6 +119,10 @@ const {
   goToNextSlide,
   goToPrevSlide,
 } = useSlideshow(props.items);
+
+const activeSlide = computed(
+  () => props.items[currentIndex.value] ?? props.items[0],
+);
 </script>
 
 <style scoped>

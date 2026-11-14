@@ -1,61 +1,91 @@
 <template>
   <header
-    :class="[
-      'max-w-screen fixed left-0 top-0 z-10 w-full transition-colors duration-200',
-      {
-        'bg-bg-light/70 dark:bg-bg-dark/70 shadow-sm backdrop-blur-lg dark:shadow-white/10':
-          showBackground || !route.fullPath.startsWith(localePath('/')),
-      },
-    ]"
+    class="max-w-screen border-wrapped-fg/15 bg-wrapped-bg font-wrapped text-wrapped-fg fixed left-0 top-0 z-10 w-full border-b"
   >
     <nav
       aria-label="Global"
-      class="mx-auto flex max-w-7xl items-center justify-between gap-x-6 p-6 lg:px-8"
+      class="min-h-18 mx-auto flex max-w-7xl items-center gap-x-5 px-4 py-3 lg:px-10"
     >
-      <div class="flex lg:flex-1">
-        <NuxtLinkLocale class="-m-1.5 p-1.5" to="/">
-          <span class="sr-only">{{ appConfig.title }}</span>
-          <SharedLogo alt="" class="h-8 w-auto" />
-        </NuxtLinkLocale>
-      </div>
-      <div class="hidden lg:flex lg:gap-x-12">
+      <NuxtLinkLocale
+        class="text-wrapped-fg mr-1 flex shrink-0 items-center gap-2.5 no-underline"
+        to="/"
+      >
+        <svg
+          width="30"
+          height="30"
+          viewBox="0 0 30 30"
+          aria-hidden="true"
+          class="shrink-0"
+        >
+          <circle cx="15" cy="15" r="14" fill="var(--color-wrapped-fg)" />
+          <circle
+            cx="15"
+            cy="15"
+            r="9"
+            fill="none"
+            stroke="var(--color-wrapped-bg)"
+            stroke-width="1"
+          />
+          <circle cx="15" cy="15" r="5" fill="#FF5B2E" />
+          <circle cx="15" cy="15" r="1.5" fill="var(--color-wrapped-bg)" />
+        </svg>
+        <span class="font-display text-2xl uppercase tracking-[0.02em]">
+          {{ appConfig.title }}
+        </span>
+        <span class="sr-only">{{ appConfig.title }}</span>
+      </NuxtLinkLocale>
+
+      <div class="hidden items-center gap-1 lg:flex">
         <NuxtLinkLocale
           v-for="item in navigation"
           :key="item.name"
           :to="item.to"
           v-show="!item.condition || item.condition()"
-          class="text-contrast text-sm/6 font-semibold"
+          :class="['ui-nav', { 'ui-nav-on': isActive(item.to) }]"
           >{{ item.name }}
         </NuxtLinkLocale>
       </div>
-      <div class="flex flex-1 items-center justify-end gap-x-4">
-        <LayoutSharedLangButton class="hidden lg:flex" />
-        <LayoutSharedColorTheme class="hidden lg:flex" />
+
+      <div class="flex-1"></div>
+
+      <div class="flex items-center justify-end gap-x-3">
         <ClientOnly>
-          <div v-if="isWrapped" class="flex gap-x-4">
-            <Button
-              class="hidden lg:flex"
-              severity="secondary"
-              @click="reset()"
+          <div
+            v-if="isWrapped || availableYears.length"
+            class="flex items-center gap-x-3"
+          >
+            <SharedHistoryYearSelector class="hidden lg:flex" />
+            <WrappedSearch v-if="canBrowse" />
+            <NuxtLinkLocale
+              v-if="canBrowse"
+              to="/slideshow"
+              class="ui-btn ui-cta hidden lg:flex"
+              :aria-label="$t('layout.topbar.show-slideshow')"
             >
-              {{ $t("layout.topbar.new-history") }}
-            </Button>
-            <Button :as="NuxtLinkLocale" to="/slideshow">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                aria-hidden="true"
+              >
+                <polygon points="6 4 20 12 6 20" />
+              </svg>
               {{ $t("layout.topbar.show-slideshow") }}
-            </Button>
+            </NuxtLinkLocale>
           </div>
         </ClientOnly>
+        <LayoutSharedLangButton class="hidden lg:flex" />
+        <LayoutSharedColorTheme class="hidden lg:flex" />
+        <LayoutTopbarMobileMenu :navigation="navigation" />
       </div>
-      <LayoutTopbarMobileMenu :navigation="navigation" />
     </nav>
   </header>
 </template>
 
 <script lang="ts" setup>
-import { NuxtLinkLocale } from "#components";
-
 const appConfig = useAppConfig();
-const localePath = useLocalePath();
+const route = useRoute();
 
 const navigation = computed<
   { name: string; to: string; condition?: () => boolean }[]
@@ -77,11 +107,25 @@ const navigation = computed<
   },
 ]);
 
-const { showBackground } = useScrollBackground();
+const isHome = computed(
+  () => route.path.replace(/\/$/, "") === localePath("/").replace(/\/$/, ""),
+);
 
-const route = useRoute();
+const isActive = (to: string) => {
+  const category = to.split("category=")[1];
+  const current = (route.query.category as string) || "tracks";
 
-const { reset } = useConfirmReset();
+  return isHome.value && category === current;
+};
+
+const localePath = useLocalePath();
 
 const { isWrapped } = storeToRefs(useWrappedStore());
+const { availableYears, isImporting, jobs } = storeToRefs(
+  useMusicHistoryStore(),
+);
+const canBrowse = computed(
+  () =>
+    isWrapped.value && !isImporting.value && !Object.keys(jobs.value).length,
+);
 </script>

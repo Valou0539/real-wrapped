@@ -4,6 +4,13 @@ export default defineNuxtPlugin(async () => {
   const appConfig = useAppConfig();
   const { processHistory } = useMusicHistoryProcessor();
 
+  // Load history from IndexedDB if not already loaded
+  try {
+    await musicHistoryStore.loadHistory();
+  } catch (error) {
+    console.error("Failed to load music history", error);
+  }
+
   if (
     wrappedStore.processVersion &&
     wrappedStore.processVersion !== appConfig.processVersion
@@ -11,14 +18,9 @@ export default defineNuxtPlugin(async () => {
     console.log(
       `Version mismatch (Store: ${wrappedStore.processVersion}, App: ${appConfig.processVersion}). Reprocessing...`,
     );
+  }
 
-    // Load history from IndexedDB if not already loaded
-    if (!musicHistoryStore.history) {
-      await musicHistoryStore.loadHistory();
-    }
-
-    if (musicHistoryStore.history) {
-      processHistory(musicHistoryStore.history);
-    }
+  if (musicHistoryStore.history) {
+    processHistory(musicHistoryStore.history);
   }
 });

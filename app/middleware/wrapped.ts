@@ -4,7 +4,7 @@ export default defineNuxtRouteMiddleware((to) => {
   const { isWrapped } = useWrappedStore();
   const localePath = useLocalePath();
 
-  if (to.path !== localePath("/") && !isWrapped) {
-    return navigateTo(localePath("/"));
+  if (to.path !== localePath("/new") && !isWrapped) {
+    return navigateTo(localePath("/new"));
   }
 });

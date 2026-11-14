@@ -1,9 +1,10 @@
 {
   "slideshow": {
     "common": {
+      "play": "écoute",
       "plays": "écoutes",
       "listened": "écoutés",
-      "mostPlayed": "Titre phare"
+      "mostPlayedTrack": "Titre phare : {track}"
     },
     "welcome": {
       "subtitle": "Prêt à revivre votre année ?",
@@ -15,6 +16,8 @@
     "totalTime": {
       "title": "Votre année en musique",
       "subtitle": "Quel dévouement !",
+      "daysSingular": "soit {days} jour d'écoute non-stop",
+      "daysPlural": "soit {days} jours d'écoute non-stop",
       "seo": {
         "title": "Temps d'écoute total",
         "description": "Découvrez votre temps d'écoute total de l'année."
@@ -23,6 +26,7 @@
     "topDay": {
       "title": "Un jour est sorti du lot",
       "subtitle": "Vous étiez à fond ce jour-là.",
+      "caption": "Chaque case est un jour de l'année. Plus elle est vive, plus vous avez écouté.",
       "seo": {
         "title": "Votre jour le plus musical",
         "description": "Le jour où vous avez le plus écouté de musique."
@@ -30,7 +34,8 @@
     },
     "totalSongs": {
       "title": "Vous avez lancé la lecture",
-      "subtitle": "fois. Une bande-son pour chaque moment.",
+      "times": "fois.",
+      "subtitle": "Une bande-son pour chaque moment.",
       "seo": {
         "title": "Total de chansons écoutées",
         "description": "Le nombre de chansons que vous avez écoutées cette année."
@@ -38,7 +43,6 @@
     },
     "topSong": {
       "title": "Une chanson en boucle",
-      "plays": "écoutes",
       "subtitle": "On sait que vous connaissez les paroles par cœur.",
       "seo": {
         "title": "Votre chanson préférée",
@@ -46,7 +50,8 @@
       }
     },
     "topSongsList": {
-      "title": "Votre Top 5 Chansons",
+      "title": "Votre Top 5",
+      "titleAccent": "Chansons",
       "seo": {
         "title": "Votre Top 5 Chansons",
         "description": "Vos 5 chansons les plus écoutées."
@@ -61,10 +66,25 @@
       }
     },
     "topArtistsList": {
-      "title": "Votre Top 5 Artistes",
+      "title": "Votre Top 5",
+      "titleAccent": "Artistes",
       "seo": {
         "title": "Votre Top 5 Artistes",
         "description": "Vos 5 artistes les plus écoutés."
+      }
+    },
+    "topHour": {
+      "title": "Votre heure de pointe",
+      "subtitle": "C'est là que votre musique prend le plus de place : plutôt {daypart}.",
+      "daypart": {
+        "morning": "le matin",
+        "afternoon": "l'après-midi",
+        "evening": "le soir",
+        "night": "la nuit"
+      },
+      "seo": {
+        "title": "Votre heure de pointe",
+        "description": "L'heure de la journée où vous écoutez le plus de musique."
       }
     },
     "topGenres": {

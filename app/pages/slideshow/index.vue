@@ -1,16 +1,25 @@
 <template>
-  <div class="flex w-full flex-col items-center justify-center p-6 text-center">
-    <h1 :style="style(0)" class="mb-4 text-5xl font-extrabold">Wrapped</h1>
-    <p :style="style(500)" class="text-2xl opacity-80">
-      {{ $t("slideshow.welcome.subtitle") }}
-    </p>
-    <div :style="style(1000)" class="mt-12">
-      <i
-        class="pi pi-spin pi-spinner text-primary-500 text-4xl"
-        style="animation-duration: 3s"
-      ></i>
+  <WrappedSlideshowSlide>
+    <WrappedSlideshowVinyl
+      variant="ghost"
+      grooves="#F3EEE3"
+      center="#FF5B2E"
+      hole="#121110"
+      class="absolute bottom-[-8%] left-0 aspect-square w-full"
+    />
+
+    <div class="relative mt-[clamp(1.5rem,9vh,7.5rem)] flex flex-col gap-7">
+      <h1
+        :style="style(100)"
+        class="slide-display text-wrapped-orange text-[clamp(4.5rem,21vw,8.875rem)] leading-[0.9]"
+      >
+        Wrapped
+      </h1>
+      <p :style="style(500)" class="slide-sub max-w-[24rem]">
+        {{ $t("slideshow.welcome.subtitle") }}
+      </p>
     </div>
-  </div>
+  </WrappedSlideshowSlide>
 </template>
 
 <script lang="ts" setup>

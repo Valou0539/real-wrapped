@@ -38,6 +38,8 @@ export default defineNuxtConfig({
   googleFonts: {
     families: {
       Poppins: true,
+      Anton: true,
+      "DM Sans": [400, 500, 700],
     },
   },
   i18n: {
@@ -71,9 +73,6 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
-    public: {
-      wrappedYear: "",
-    },
     lastfmApiKey: "",
   },
 

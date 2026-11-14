@@ -1,6 +1,8 @@
 import { describe, it, expect } from "vitest";
 import {
   computeTopDate,
+  computeDailyMsPlayed,
+  computeHourlyMsPlayed,
   computeTopArtists,
   computeTopTracks,
   computeTopGenres,
@@ -67,6 +69,41 @@ describe("wrapped utils", () => {
 
     it("returns undefined for empty history", () => {
       expect(computeTopDate([])).toBeUndefined();
+    });
+  });
+
+  describe("computeDailyMsPlayed", () => {
+    it("aggregates msPlayed per day", () => {
+      const result = computeDailyMsPlayed(history);
+      expect(result).toEqual({
+        "2023-01-01": 100000,
+        "2023-01-02": 200000,
+      });
+    });
+
+    it("returns empty object for empty history", () => {
+      expect(computeDailyMsPlayed([])).toEqual({});
+    });
+  });
+
+  describe("computeHourlyMsPlayed", () => {
+    it("aggregates msPlayed per local hour", () => {
+      const result = computeHourlyMsPlayed(history);
+      expect(result).toHaveLength(24);
+
+      history.forEach((track) => {
+        const hour = new Date(track.endTime).getHours();
+        const expected = history
+          .filter((t) => new Date(t.endTime).getHours() === hour)
+          .reduce((acc, t) => acc + t.msPlayed, 0);
+        expect(result[hour]).toBe(expected);
+      });
+    });
+
+    it("returns 24 zeros for empty history", () => {
+      const result = computeHourlyMsPlayed([]);
+      expect(result).toHaveLength(24);
+      expect(result.every((v) => v === 0)).toBe(true);
     });
   });
 

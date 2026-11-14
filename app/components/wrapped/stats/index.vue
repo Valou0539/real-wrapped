@@ -1,37 +1,43 @@
 <template>
-  <Tabs :value="category" @update:value="updateParams($event)">
-    <TabList class="bg-transparent">
-      <Tab value="tracks">{{ $t("music-history.stats.tracks") }}</Tab>
-      <Tab value="artists">{{ $t("music-history.stats.artists") }}</Tab>
-      <Tab value="genres">{{ $t("music-history.stats.genres") }}</Tab>
-    </TabList>
-    <TabPanels class="bg-transparent">
-      <TabPanel value="tracks">
-        <SharedMonthSelector :selected-month="month" />
-        <WrappedStatsTracks
-          :month="month"
-          :play-time="playTime"
-          :play-count="playCount"
-        />
-      </TabPanel>
-      <TabPanel value="artists">
-        <SharedMonthSelector :selected-month="month" />
-        <WrappedStatsArtists
-          :month="month"
-          :play-time="playTime"
-          :play-count="playCount"
-        />
-      </TabPanel>
-      <TabPanel value="genres">
-        <SharedMonthSelector :selected-month="month" />
-        <WrappedStatsGenres
-          :month="month"
-          :play-time="playTime"
-          :play-count="playCount"
-        />
-      </TabPanel>
-    </TabPanels>
-  </Tabs>
+  <div class="font-wrapped flex flex-col gap-6">
+    <div
+      class="scrollbar-none flex gap-3 overflow-x-auto [-ms-overflow-style:none] lg:hidden [&::-webkit-scrollbar]:hidden"
+      role="tablist"
+    >
+      <button
+        v-for="tab in tabs"
+        :key="tab.value"
+        type="button"
+        role="tab"
+        :aria-selected="category === tab.value"
+        :class="['ui-tab', { 'ui-tab-on': category === tab.value }]"
+        @click="updateParams(tab.value)"
+      >
+        {{ $t(tab.label) }}
+      </button>
+    </div>
+
+    <SharedMonthSelector :selected-month="month" />
+
+    <WrappedStatsTracks
+      v-if="category === 'tracks'"
+      :month="month"
+      :play-time="playTime"
+      :play-count="playCount"
+    />
+    <WrappedStatsArtists
+      v-else-if="category === 'artists'"
+      :month="month"
+      :play-time="playTime"
+      :play-count="playCount"
+    />
+    <WrappedStatsGenres
+      v-else
+      :month="month"
+      :play-time="playTime"
+      :play-count="playCount"
+    />
+  </div>
 </template>
 
 <script lang="ts" setup>
@@ -44,6 +50,12 @@ const {
   totalPlayCount,
   monthlyTotalPlayCount,
 } = storeToRefs(useWrappedStore());
+
+const tabs = [
+  { value: "tracks", label: "music-history.stats.tracks" },
+  { value: "artists", label: "music-history.stats.artists" },
+  { value: "genres", label: "music-history.stats.genres" },
+] as const;
 
 const category = computed(() => {
   return (route.query.category as string) || "tracks";

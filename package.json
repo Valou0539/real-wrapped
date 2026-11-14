@@ -14,37 +14,40 @@
   },
   "dependencies": {
     "@heroicons/vue": "^2.2.0",
-    "@nuxt/image": "^1.9.0",
+    "@nuxt/image": "^2.2.1",
     "@nuxtjs/color-mode": "^3.5.2",
     "@nuxtjs/google-fonts": "^3.2.0",
     "@nuxtjs/i18n": "^10.0.6",
     "@pinia/nuxt": "^0.11.2",
-    "@primevue/forms": "^4.2.5",
+    "@primevue/forms": "^4.5.5",
     "@primevue/themes": "^4.2.5",
     "@tailwindcss/vite": "^4.1.12",
     "nuxt": "^4.2.0",
     "pinia": "^3.0.3",
     "pinia-plugin-persistedstate": "^4.7.1",
     "primeicons": "^7.0.0",
-    "primevue": "github:Valou0539/primevue#primevue-only",
+    "primevue": "^4.5.5",
     "tailwindcss": "^4.1.12",
     "vue": "latest",
     "vue-router": "latest",
-    "zod": "^3.25.17"
+    "zod": "^4.6.7"
   },
   "devDependencies": {
-    "@nuxt/test-utils": "^3.20.1",
-    "@primevue/nuxt-module": "^4.2.5",
+    "@nuxt/test-utils": "^4.3.4",
+    "@primevue/nuxt-module": "^4.5.5",
     "@types/node": "^24.9.1",
-    "@vitest/browser": "^3.1.4",
-    "@vitest/ui": "^3.2.4",
+    "@vitest/browser": "^4.1.12",
+    "@vitest/ui": "^4.1.12",
     "@vue/test-utils": "^2.4.6",
-    "happy-dom": "^20.0.8",
+    "happy-dom": "^21.0.4",
     "prettier": "^3.4.2",
-    "prettier-plugin-tailwindcss": "^0.6.11"
+    "prettier-plugin-tailwindcss": "^0.6.11",
+    "vite": "^8.3.5",
+    "vitest": "^4.1.12"
   },
   "overrides": {
     "vue": "latest",
-    "serialize-javascript": "^7.0.3"
+    "glob": "^14.0.4",
+    "minimatch": "^11.0.5"
   }
 }

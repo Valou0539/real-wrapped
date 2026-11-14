@@ -1,26 +1,40 @@
 import type { TopArtist, TopDate, TopGenre, TopTrack } from "~/types/wrapped";
 
+export const computeDailyMsPlayed = (
+  history: EnhancedMusicHistoryTrack[],
+): Record<string, number> => {
+  return history.reduce<Record<string, number>>((acc, track) => {
+    const date = new Date(track.endTime).toISOString().split("T")[0] as string;
+    acc[date] = (acc[date] ?? 0) + track.msPlayed;
+    return acc;
+  }, {});
+};
+
 export const computeTopDate = (
   history: EnhancedMusicHistoryTrack[],
 ): TopDate | undefined => {
   if (!history.length) return undefined;
 
-  const map = history.reduce<Record<string, TopDate>>((acc, track) => {
-    const date = new Date(track.endTime).toISOString().split("T")[0] as string;
+  const dailyMsPlayed = computeDailyMsPlayed(history);
 
-    if (!acc[date]) {
-      acc[date] = {
-        day: date,
-        msPlayed: track.msPlayed,
-      };
-    } else {
-      acc[date].msPlayed += track.msPlayed;
-    }
+  const [day, msPlayed] = Object.entries(dailyMsPlayed).sort(
+    (a, b) => b[1] - a[1],
+  )[0] as [string, number];
 
-    return acc;
-  }, {});
+  return { day, msPlayed };
+};
 
-  return Object.values(map).sort((a, b) => b.msPlayed - a.msPlayed)[0];
+export const computeHourlyMsPlayed = (
+  history: EnhancedMusicHistoryTrack[],
+): number[] => {
+  const hours = new Array<number>(24).fill(0);
+
+  history.forEach((track) => {
+    const hour = new Date(track.endTime).getHours();
+    hours[hour] = (hours[hour] ?? 0) + track.msPlayed;
+  });
+
+  return hours;
 };
 
 export const computeTopArtists = (

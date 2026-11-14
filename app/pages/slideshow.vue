@@ -15,43 +15,69 @@ definePageMeta({
 const items: Slide[] = [
   {
     slug: "",
-    duration: 3000,
+    duration: 4000,
+    bg: "#121110",
+    fg: "#F3EEE3",
   },
   {
     slug: "total-time",
-    duration: 5000,
-  },
-  {
-    slug: "top-day",
-    duration: 5000,
+    duration: 5500,
+    bg: "#FF5B2E",
+    fg: "#121110",
   },
   {
     slug: "total-songs",
-    duration: 5000,
+    duration: 5500,
+    bg: "#F3EEE3",
+    fg: "#121110",
+  },
+  {
+    slug: "top-day",
+    duration: 7500,
+    bg: "#121110",
+    fg: "#F3EEE3",
+  },
+  {
+    slug: "top-hour",
+    duration: 6500,
+    bg: "#D6FF3D",
+    fg: "#121110",
   },
   {
     slug: "top-song",
-    duration: 6000,
+    duration: 6500,
+    bg: "#5A3CEE",
+    fg: "#F3EEE3",
   },
   {
     slug: "top-songs-list",
     duration: 8000,
+    bg: "#121110",
+    fg: "#F3EEE3",
   },
   {
     slug: "top-artist",
-    duration: 6000,
+    duration: 6500,
+    bg: "#FF5B2E",
+    fg: "#121110",
   },
   {
     slug: "top-artists-list",
     duration: 8000,
+    bg: "#F3EEE3",
+    fg: "#121110",
   },
   {
     slug: "top-genres",
-    duration: 7000,
+    duration: 7500,
+    bg: "#5A3CEE",
+    fg: "#F3EEE3",
   },
   {
     slug: "summary",
     duration: 0,
+    bg: "#121110",
+    fg: "#F3EEE3",
   },
 ];
 </script>

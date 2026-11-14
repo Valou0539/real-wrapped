@@ -1,45 +1,73 @@
 <template>
-  <div class="flex w-full flex-col items-center justify-center p-6 text-center">
-    <h2 :style="style(0)" class="text-slide-title mb-8 font-bold">
+  <WrappedSlideshowSlide>
+    <p
+      :style="style(100)"
+      class="slide-kicker relative mt-[clamp(1rem,4vh,3.5rem)]"
+    >
       {{ $t("slideshow.topSong.title") }}
-    </h2>
+    </p>
 
-    <div v-if="topTrack" class="flex flex-col items-center">
-      <ClientOnly>
+    <ClientOnly>
+      <div
+        v-if="topTrack"
+        :style="style(350)"
+        class="h-(--cover) relative mt-7"
+        style="--cover: clamp(230px, 62vw, 300px)"
+      >
+        <WrappedSlideshowVinyl
+          grooves="#F3EEE3"
+          center="#D6FF3D"
+          hole="#121110"
+          class="absolute top-0 aspect-square"
+          style="left: calc(var(--cover) - 130px); height: var(--cover)"
+        />
         <img
           v-if="topTrack.cover"
           :src="topTrack.cover"
-          :style="style(500)"
-          class="mb-6 h-48 w-48 rounded-lg object-cover shadow-lg"
-          alt="Album Art"
+          class="absolute left-0 top-0 aspect-square object-cover shadow-[0_18px_40px_rgba(0,0,0,0.35)]"
+          style="height: var(--cover)"
+          :alt="topTrack.trackName"
         />
-
         <div
-          :style="style(1000)"
-          class="text-primary-500 dark:text-primary-400 text-slide-title mb-2 font-bold"
+          v-else
+          class="absolute left-0 top-0 flex aspect-square items-center justify-center bg-[repeating-linear-gradient(135deg,#F3EEE3_0_14px,#E4DDCE_14px_28px)] shadow-[0_18px_40px_rgba(0,0,0,0.35)]"
+          style="height: var(--cover)"
+        >
+          <MusicalNoteIcon class="text-wrapped-ink size-16" />
+        </div>
+      </div>
+
+      <div v-if="topTrack" class="mt-9 flex flex-col gap-2.5">
+        <div
+          :style="style(600)"
+          class="slide-display text-[clamp(2.3rem,11.5vw,3.875rem)] leading-none"
         >
           {{ topTrack.trackName }}
         </div>
         <div
-          :style="style(1200)"
-          class="mb-4 text-xl font-semibold sm:text-2xl"
+          :style="style(750)"
+          class="text-[clamp(1.1rem,4.5vw,1.625rem)] font-medium"
         >
           {{ topTrack.artistName }}
         </div>
-
-        <div :style="style(1500)" class="text-slide-subtitle opacity-80">
-          {{ topTrack.playCount }} {{ $t("slideshow.topSong.plays") }}
+        <div
+          :style="style(950)"
+          class="bg-wrapped-lime text-wrapped-ink mt-2 self-start rounded-full px-5 py-2.5 text-[clamp(1rem,4.5vw,1.375rem)] font-bold"
+        >
+          {{ topTrack.playCount }} {{ playsLabel }}
         </div>
-      </ClientOnly>
-    </div>
+      </div>
+    </ClientOnly>
 
-    <p :style="style(2000)" class="text-slide-subtitle mt-8 opacity-80">
+    <p :style="style(1300)" class="slide-sub mt-auto max-w-[24rem]">
       {{ $t("slideshow.topSong.subtitle") }}
     </p>
-  </div>
+  </WrappedSlideshowSlide>
 </template>
 
 <script lang="ts" setup>
+import { MusicalNoteIcon } from "@heroicons/vue/24/outline";
+
 const { style } = useAnimationOnLoad();
 const store = useWrappedStore();
 
@@ -49,4 +77,9 @@ useSeoMeta({
 });
 
 const topTrack = computed(() => store.topTracks[0]);
+const playsLabel = computed(() =>
+  (topTrack.value?.playCount ?? 0) > 1
+    ? $t("slideshow.common.plays")
+    : $t("slideshow.common.play"),
+);
 </script>

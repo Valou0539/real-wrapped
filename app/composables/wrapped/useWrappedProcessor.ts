@@ -25,6 +25,8 @@ export const useMusicHistoryProcessor = () => {
     const totalGenres = allGenres.length;
 
     const topDate = computeTopDate(history);
+    const dailyMsPlayed = computeDailyMsPlayed(history);
+    const hourlyMsPlayed = computeHourlyMsPlayed(history);
 
     // Top Lists
     const topArtists = allArtists.slice(0, 100);
@@ -85,6 +87,8 @@ export const useMusicHistoryProcessor = () => {
     wrappedStore.topGenres = topGenres;
     wrappedStore.topTracks = topTracks;
     wrappedStore.topDate = topDate;
+    wrappedStore.dailyMsPlayed = dailyMsPlayed;
+    wrappedStore.hourlyMsPlayed = hourlyMsPlayed;
     wrappedStore.monthlyTopTracks = monthlyTopTracks;
     wrappedStore.monthlyTopArtists = monthlyTopArtists;
     wrappedStore.monthlyTopGenres = monthlyTopGenres;

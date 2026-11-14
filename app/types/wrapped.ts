@@ -30,4 +30,6 @@ export interface TopGenre {
 export interface Slide {
   slug: string;
   duration: number;
+  bg: string;
+  fg: string;
 }

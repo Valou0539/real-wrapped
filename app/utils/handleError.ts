@@ -1,7 +1,6 @@
 import type { FetchContext } from "ofetch";
 import type { ErrorMapping } from "~/types/errorHandler";
 
-
 /**
  * Fonction générique pour gérer les erreurs d'API
  * @param error - L'erreur retournée par l'API

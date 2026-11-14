@@ -2,11 +2,11 @@
   "music-history": {
     "upload": {
       "app": {
-        "title": "Votre Vrai Spotify Wrapped",
+        "title": "Votre Vrai {spotify} Wrapped",
         "description": "Le Wrapped de Spotify c'est bien, mais ce n'est pas toujours précis. Il manque du temps d'écoute et s'arrête tôt dans l'année. En utilisant les vraies données d'historique de votre compte, nous générons des statistiques 100% précises de votre année musicale."
       },
       "title": "Déposez vos fichiers d'historique",
-      "hint": "Formats acceptés : JSON uniquement",
+      "hint": "Formats acceptés : JSON uniquement — accepte les fichiers StreamingHistory_music_*.json de Spotify",
       "tutorial": {
         "title": "Vous ne trouvez pas vos fichiers ?",
         "description": "Demandez vos données dans {spotifyPrivacy}, attendez quelques jours et déposez les fichiers StreamingHistory_music_*.json ici.",
@@ -16,11 +16,36 @@
       "processing": "Récupération des genres et images en cours... Vous pouvez revenir plus tard.",
       "queue": "Votre traitement est en attente, il reste {count} personne devant vous | Votre traitement est en attente, il reste {count} personnes devant vous",
       "cancel": "Annuler",
+      "retry": "Réessayer",
+      "job-year": "Année {year}",
+      "year": {
+        "label": "Année"
+      },
+      "confirm-replace": {
+        "message": "Votre historique de {year} sera remplacé par les fichiers sélectionnés. Continuer ?",
+        "header": "Remplacer l'année",
+        "accept": "Oui, remplacer",
+        "reject": "Annuler"
+      },
       "errors": {
         "required": "Veuillez sélectionner au moins un fichier",
         "unsupported": "Format de fichier non supporté. Seuls les fichiers JSON sont acceptés",
-        "invalid-content": "Le contenu du fichier JSON est invalide ou ne correspond pas au format d'historique musical attendu"
-      }
+        "invalid-content": "Le contenu du fichier JSON est invalide ou ne correspond pas au format d'historique musical attendu",
+        "year": "Veuillez saisir une année entre 1970 et 9999",
+        "no-tracks": "Aucun historique d'écoute trouvé pour cette année dans les fichiers sélectionnés",
+        "request": "L'import n'a pas pu démarrer. Veuillez réessayer.",
+        "job-failed": "L'import a échoué. Veuillez réessayer avec vos fichiers.",
+        "fetch-job": "Impossible de joindre le serveur. Votre import est toujours en cours.",
+        "save-job": "L'historique importé n'a pas pu être sauvegardé sur cet appareil.",
+        "load-history": "Votre historique sauvegardé n'a pas pu être lu. Veuillez réessayer.",
+        "missing-job": "La tâche d'import est introuvable."
+      },
+      "dropzone": "Glissez-déposez vos fichiers ici",
+      "dropzone-alt": "ou sélectionnez-en plusieurs",
+      "progress": "Progression",
+      "queue-chip": "En file d'attente",
+      "processing-chip": "Traitement",
+      "error-chip": "Erreur"
     },
     "reset": {
       "confirm": {
@@ -29,6 +54,50 @@
         "accept": "Oui, réinitialiser",
         "reject": "Annuler"
       }
+    },
+    "entity": {
+      "back": "Retour aux statistiques",
+      "scope": "{year} · {period}",
+      "not-found": "Aucune écoute pour cet artiste, ce genre ou ce titre sur la période sélectionnée.",
+      "show-year": "Voir toute l'année",
+      "columns": {
+        "rank": "Rang",
+        "overallRank": "Global",
+        "title": "Titre",
+        "playTime": "Temps d'écoute",
+        "plays": "Écoutes"
+      }
+    },
+    "year": {
+      "label": "Année",
+      "placeholder": "Choisir une année",
+      "new": "Nouvelle année"
+    },
+    "search": {
+      "label": "Rechercher des titres, artistes et genres",
+      "tabs": {
+        "best": "Meilleurs résultats"
+      },
+      "placeholder": "Rechercher un titre, un artiste ou un genre",
+      "scope": "{year} · {period}",
+      "prompt": "Saisissez un nom pour retrouver vos titres, artistes et genres.",
+      "empty": "Aucun résultat pour cette recherche.",
+      "unavailable": "La recherche sera disponible une fois votre historique chargé.",
+      "loading": "Chargement de votre historique…",
+      "load-error": "Impossible de lire votre historique. Réessayez.",
+      "tracks-count": "Titres ({count})",
+      "artists-count": "Artistes ({count})",
+      "genres-count": "Genres ({count})",
+      "load-more": "Afficher {count} de plus",
+      "back": "Retour aux résultats",
+      "rank": "Rang",
+      "plays": "Écoutes",
+      "time": "Temps d'écoute",
+      "firstPlay": "Première écoute",
+      "topTracks": "Titres les plus écoutés",
+      "noTracks": "Aucun titre trouvé.",
+      "overallRank": "Global #{rank}",
+      "short": "Rechercher"
     },
     "stats": {
       "all": "Tout",

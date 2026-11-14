@@ -2,11 +2,11 @@
   "music-history": {
     "upload": {
       "app": {
-        "title": "Your Real Spotify Wrapped",
+        "title": "Your Real {spotify} Wrapped",
         "description": "Spotify's Wrapped is great, but it's not always accurate. It misses some listening time and cuts off early in the year. By using your actual account history data, we generate 100% accurate statistics of your year in music."
       },
       "title": "Drop your history files",
-      "hint": "Accepted formats: JSON only",
+      "hint": "Accepted formats: JSON only — accepts Spotify StreamingHistory_music_*.json files",
       "tutorial": {
         "title": "Don't know where to find your files?",
         "description": "Request your data from your {spotifyPrivacy}, wait a few day and drop the StreamingHistory_music_*.json files here.",
@@ -16,11 +16,36 @@
       "processing": "Retrieving genres and images... You can come back later.",
       "queue": "Your request is queued, {count} person ahead of you | Your request is queued, {count} people ahead of you",
       "cancel": "Cancel",
+      "retry": "Retry",
+      "job-year": "Year {year}",
+      "year": {
+        "label": "Year"
+      },
+      "confirm-replace": {
+        "message": "Your history for {year} will be replaced by the files you selected. Continue?",
+        "header": "Replace year",
+        "accept": "Yes, replace",
+        "reject": "Cancel"
+      },
       "errors": {
         "required": "Please select at least one file",
         "unsupported": "Unsupported file format. Only JSON files are accepted",
-        "invalid-content": "The JSON file content is invalid or does not match the expected music history format"
-      }
+        "invalid-content": "The JSON file content is invalid or does not match the expected music history format",
+        "year": "Please enter a year between 1970 and 9999",
+        "no-tracks": "No listening history found for this year in the selected files",
+        "request": "The import could not be started. Please try again.",
+        "job-failed": "The import failed. Please try again with your files.",
+        "fetch-job": "Could not reach the server. Your import is still in progress.",
+        "save-job": "The imported history could not be saved on this device.",
+        "load-history": "Your saved history could not be read. Please try again.",
+        "missing-job": "The import job could not be found."
+      },
+      "dropzone": "Drag & drop your files here",
+      "dropzone-alt": "or select multiple files",
+      "progress": "Progress",
+      "queue-chip": "Queued",
+      "processing-chip": "Processing",
+      "error-chip": "Error"
     },
     "reset": {
       "confirm": {
@@ -29,6 +54,50 @@
         "accept": "Yes, reset",
         "reject": "Cancel"
       }
+    },
+    "entity": {
+      "back": "Back to stats",
+      "scope": "{year} · {period}",
+      "not-found": "No listening data for this artist, genre or track in the selected period.",
+      "show-year": "See the whole year",
+      "columns": {
+        "rank": "Rank",
+        "overallRank": "Overall",
+        "title": "Track",
+        "playTime": "Play time",
+        "plays": "Plays"
+      }
+    },
+    "year": {
+      "label": "Year",
+      "placeholder": "Select a year",
+      "new": "New year"
+    },
+    "search": {
+      "label": "Search tracks, artists and genres",
+      "tabs": {
+        "best": "Best results"
+      },
+      "placeholder": "Search a track, an artist or a genre",
+      "scope": "{year} · {period}",
+      "prompt": "Type a name to find your tracks, artists and genres.",
+      "empty": "No results for this search.",
+      "unavailable": "Search is unavailable until your history is loaded.",
+      "loading": "Loading your history…",
+      "load-error": "Could not read your history. Please retry.",
+      "tracks-count": "Tracks ({count})",
+      "artists-count": "Artists ({count})",
+      "genres-count": "Genres ({count})",
+      "load-more": "Load {count} more",
+      "back": "Back to results",
+      "rank": "Rank",
+      "plays": "Plays",
+      "time": "Play time",
+      "firstPlay": "First play",
+      "topTracks": "Top tracks",
+      "noTracks": "No tracks found.",
+      "overallRank": "Overall #{rank}",
+      "short": "Search"
     },
     "stats": {
       "all": "All",

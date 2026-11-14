@@ -1,31 +1,25 @@
 <template>
-  <div class="md: my-8 grid grid-cols-1 gap-8 md:grid-cols-3">
-    <Card>
-      <template #title>
+  <div class="grid grid-cols-2 gap-2.5 md:grid-cols-3 md:gap-4">
+    <div
+      class="ui-card bg-wrapped-orange text-wrapped-ink col-span-2 md:col-span-1"
+    >
+      <div class="ui-card-lb">
         {{ $t("music-history.stats.genresGlobal.cards.totalPlayTime") }}
-      </template>
-      <template #content>
-        <p>
-          {{ formatDuration(playTime) }}
-        </p>
-      </template>
-    </Card>
-    <Card>
-      <template #title>
+      </div>
+      <div class="ui-card-val">{{ formatDuration(playTime) }}</div>
+    </div>
+    <div class="ui-card bg-wrapped-purple text-wrapped-cream">
+      <div class="ui-card-lb">
         {{ $t("music-history.stats.genresGlobal.cards.totalGenres") }}
-      </template>
-      <template #content>
-        <p>{{ genresCount }}</p>
-      </template>
-    </Card>
-    <Card>
-      <template #title>
+      </div>
+      <div class="ui-card-val">{{ genresCount }}</div>
+    </div>
+    <div class="ui-card bg-wrapped-lime text-wrapped-ink">
+      <div class="ui-card-lb">
         {{ $t("music-history.stats.genresGlobal.cards.totalPlayCount") }}
-      </template>
-      <template #content>
-        <p>{{ playCount }}</p>
-      </template>
-    </Card>
+      </div>
+      <div class="ui-card-val">{{ playCount }}</div>
+    </div>
   </div>
 </template>
 

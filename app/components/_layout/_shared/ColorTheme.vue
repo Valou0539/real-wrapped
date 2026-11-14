@@ -1,21 +1,20 @@
 <template>
-  <Button
-    aria-hidden="true"
+  <button
+    type="button"
+    class="ui-ib"
+    :aria-label="$t('layout.topbar.toggle_theme')"
     @click="
       $colorMode.preference = $colorMode.value === 'light' ? 'dark' : 'light'
     "
-    text
-    rounded
-    class="p-2"
-    severity="contrast"
   >
     <ClientOnly>
       <component
         :is="$colorMode.value === 'light' ? MoonIcon : SunIcon"
         class="size-5"
+        aria-hidden="true"
       />
     </ClientOnly>
-  </Button>
+  </button>
 </template>
 
 <script lang="ts" setup>

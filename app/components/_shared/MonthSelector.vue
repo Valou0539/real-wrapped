@@ -1,19 +1,23 @@
 <template>
-  <div class="flex flex-wrap gap-1">
-    <Button
-      :label="$t('music-history.stats.all')"
+  <div
+    class="font-wrapped scrollbar-none flex gap-2 overflow-x-auto [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+  >
+    <button
+      type="button"
+      :class="['ui-chip', { 'ui-chip-on': selectedMonth === 'all' }]"
       @click="updateParams('all')"
-      :severity="selectedMonth === 'all' ? 'primary' : 'secondary'"
-      rounded
-    />
-    <Button
+    >
+      {{ $t("music-history.stats.all") }}
+    </button>
+    <button
       v-for="month in 12"
       :key="month"
-      :label="$t(monthsKey[month - 1] ?? '')"
-      :severity="month - 1 === selectedMonth ? 'primary' : 'secondary'"
+      type="button"
+      :class="['ui-chip', { 'ui-chip-on': month - 1 === selectedMonth }]"
       @click="updateParams(month)"
-      rounded
-    />
+    >
+      {{ $t(monthsKey[month - 1] ?? "") }}
+    </button>
   </div>
 </template>
 
