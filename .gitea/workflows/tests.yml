@@ -13,7 +13,7 @@ jobs:
       image: cimg/node:26.7
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v4
 
       - name: Versions
         run: |

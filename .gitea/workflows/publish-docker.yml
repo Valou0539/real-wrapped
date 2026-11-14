@@ -18,7 +18,7 @@ jobs:
       REGISTRY_PASSWORD: ${{ secrets.ACTIONS_TOKEN }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v4
 
       - name: Read version from package.json
         id: version
