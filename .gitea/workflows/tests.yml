@@ -10,10 +10,10 @@ jobs:
   tests:
     runs-on: self-hosted
     container:
-      image: cimg/node:22.13
+      image: cimg/node:26.7
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
       - name: Versions
         run: |

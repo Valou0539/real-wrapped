@@ -10,7 +10,7 @@ jobs:
     # Adjust this label to match your Gitea runner (e.g., ubuntu-latest)
     runs-on: self-hosted
     container:
-      image: node:25
+      image: node:26
     env:
       # Configure these secrets in your Gitea repo: Settings → Secrets
       REGISTRY_HOST: ${{ vars.DOMAIN }}
@@ -18,7 +18,7 @@ jobs:
       REGISTRY_PASSWORD: ${{ secrets.ACTIONS_TOKEN }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Read version from package.json
         id: version
