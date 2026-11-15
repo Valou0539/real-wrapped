@@ -121,11 +121,12 @@ const isActive = (to: string) => {
 const localePath = useLocalePath();
 
 const { isWrapped } = storeToRefs(useWrappedStore());
-const { availableYears, isImporting, jobs } = storeToRefs(
+const { availableYears, jobs, selectedYear } = storeToRefs(
   useMusicHistoryStore(),
 );
 const canBrowse = computed(
   () =>
-    isWrapped.value && !isImporting.value && !Object.keys(jobs.value).length,
+    isWrapped.value &&
+    !Object.values(jobs.value).some((year) => year === selectedYear.value),
 );
 </script>

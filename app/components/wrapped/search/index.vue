@@ -98,7 +98,7 @@
                 'ui-chip h-10! text-[15px]! font-bold!',
                 {
                   'ui-chip-on border-wrapped-fg! bg-wrapped-fg':
-                    !activeTab === tab.value,
+                    activeTab === tab.value,
                 },
               ]"
               @click="activeTab = tab.value"

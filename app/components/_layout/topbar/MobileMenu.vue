@@ -118,9 +118,10 @@ const isActive = (to: string) => {
 };
 
 const { isWrapped } = storeToRefs(useWrappedStore());
-const { isImporting, jobs } = storeToRefs(useMusicHistoryStore());
+const { jobs, selectedYear } = storeToRefs(useMusicHistoryStore());
 const canBrowse = computed(
   () =>
-    isWrapped.value && !isImporting.value && !Object.keys(jobs.value).length,
+    isWrapped.value &&
+    !Object.values(jobs.value).some((year) => year === selectedYear.value),
 );
 </script>
