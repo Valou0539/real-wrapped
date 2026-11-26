@@ -390,7 +390,9 @@ export const exchangeCode = async (
 
   // The session cookie lives on the callback origin: stay there.
   await saveTokens(event, tokens);
-  return `${target.pathname}${target.search}${target.hash}`;
+  // Collapse leading slashes: "//host" would be an off-site redirect.
+  const path = target.pathname.replace(/^\/+/, "/");
+  return `${path}${target.search}${target.hash}`;
 };
 
 /**

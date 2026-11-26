@@ -396,6 +396,13 @@ describe("spotify user auth", () => {
     const lan = await login(auth, other, "http://192.168.1.5:3000/x");
     expect(lan.next).toBe("/x");
     expect(await isAuthenticated(auth, other)).toBe(true);
+    // A double-slash path must not turn into a protocol-relative redirect.
+    const sneaky = await login(
+      auth,
+      createBrowser(),
+      "http://192.168.1.5:3000//evil.example.com/x",
+    );
+    expect(sneaky.next).toBe("/evil.example.com/x");
   });
 
   it("refreshes an expired access token into the browser's session", async () => {
