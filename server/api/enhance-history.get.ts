@@ -1,4 +1,8 @@
-import { getJobState } from "../services/enhance-history/job.service";
+import { createError, defineEventHandler, getQuery } from "h3";
+import {
+  deleteJob,
+  getJobState,
+} from "../services/enhance-history/job.service";
 
 export default defineEventHandler((event) => {
   const query = getQuery(event);
@@ -18,6 +22,10 @@ export default defineEventHandler((event) => {
       statusCode: 404,
       message: "Job not found",
     });
+  }
+
+  if (state.status === "completed") {
+    deleteJob(jobId);
   }
 
   return state;

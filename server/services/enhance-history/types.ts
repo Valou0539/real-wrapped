@@ -7,6 +7,7 @@ export interface EnhanceHistoryJob {
   result: EnhancedMusicHistoryTrack[] | null;
   error?: string;
   createdAt: number;
+  ownerKey: string;
   cancelled?: boolean;
 }
 

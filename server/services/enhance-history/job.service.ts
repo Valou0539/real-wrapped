@@ -4,7 +4,21 @@ import { createGenreLookup } from "./genres.service";
 import type { createSpotifyCatalog } from "../spotify/catalog.service";
 import { getSharedSpotifyCatalog } from "../spotify/catalog-instance";
 
-const JOB_CLEANUP_DELAY = 60_000 * 60 * 24;
+export const COMPLETED_JOB_CLEANUP_DELAY = 60_000 * 10;
+export const ERROR_JOB_CLEANUP_DELAY = 60_000;
+export const MAX_TRACKED_JOBS = 8;
+export const MAX_TRACKED_JOBS_PER_IP = 3;
+export const MAX_PENDING_JOBS = 6;
+export const MAX_ACTIVE_JOBS_PER_IP = 1;
+export const MAX_SPOTIFY_ENRICHMENT_ITEMS = 2_000;
+
+export class JobQueueFullError extends Error {
+  constructor() {
+    super("Too many history import jobs");
+    this.name = "JobQueueFullError";
+  }
+}
+
 const ARTIST_WORKERS = 4;
 const MAX_CONSECUTIVE_ERRORS = 10;
 const MARKET_PATTERN = /^[A-Z]{2}$/;
@@ -39,9 +53,53 @@ const getJobsMap = (): Map<string, EnhanceHistoryJob> => {
   return globalThis.__enhanceHistoryJobs;
 };
 
-export const createJob = (tracks: MusicHistoryTrack[]): string => {
+const isActiveJob = (job: EnhanceHistoryJob): boolean =>
+  job.status === "pending" || job.status === "processing";
+
+const assertJobCapacity = (
+  jobs: Map<string, EnhanceHistoryJob>,
+  ownerKey: string,
+): void => {
+  let pendingCount = 0;
+  let trackedOwnerCount = 0;
+  let activeOwnerCount = 0;
+
+  for (const job of jobs.values()) {
+    if (job.status === "pending") pendingCount++;
+    if ((job.ownerKey ?? "unknown") === ownerKey) {
+      trackedOwnerCount++;
+      if (isActiveJob(job)) activeOwnerCount++;
+    }
+  }
+
+  if (
+    jobs.size >= MAX_TRACKED_JOBS ||
+    trackedOwnerCount >= MAX_TRACKED_JOBS_PER_IP ||
+    pendingCount >= MAX_PENDING_JOBS ||
+    activeOwnerCount >= MAX_ACTIVE_JOBS_PER_IP
+  ) {
+    throw new JobQueueFullError();
+  }
+};
+
+const scheduleJobCleanup = (jobId: string, delay: number): void => {
+  const timer = setTimeout(() => {
+    deleteJob(jobId);
+  }, delay);
+  if (typeof timer.unref === "function") timer.unref();
+};
+
+export const assertJobCreationCapacity = (ownerKey: string): void => {
+  assertJobCapacity(getJobsMap(), ownerKey);
+};
+
+export const createJob = (
+  tracks: MusicHistoryTrack[],
+  ownerKey = "unknown",
+): string => {
   const jobId = crypto.randomUUID();
   const jobs = getJobsMap();
+  assertJobCreationCapacity(ownerKey);
 
   jobs.set(jobId, {
     tracks,
@@ -49,6 +107,7 @@ export const createJob = (tracks: MusicHistoryTrack[]): string => {
     status: "pending",
     result: null,
     createdAt: Date.now(),
+    ownerKey,
   });
 
   return jobId;
@@ -338,11 +397,20 @@ export const startProcessing = async (jobId: string): Promise<void> => {
 
     let spotifyGenres = new Map<string, string[]>();
     let trackCredits = new Map<string, Map<string, TrackCredit | undefined>>();
-    const totalWork = artistsToFetch.length + featPairsToResolve.length;
+    const limitedArtistsToFetch = artistsToFetch.slice(
+      0,
+      MAX_SPOTIFY_ENRICHMENT_ITEMS,
+    );
+    const limitedFeatPairsToResolve = featPairsToResolve.slice(
+      0,
+      MAX_SPOTIFY_ENRICHMENT_ITEMS - limitedArtistsToFetch.length,
+    );
+    const totalWork =
+      limitedArtistsToFetch.length + limitedFeatPairsToResolve.length;
     if (totalWork > 0 && isSpotifyConfigured()) {
       const enrichment = await fetchSpotifyEnrichment(
-        artistsToFetch,
-        featPairsToResolve,
+        limitedArtistsToFetch,
+        limitedFeatPairsToResolve,
         (done, total) => {
           job.progress = Math.floor((done / total) * 100);
         },
@@ -369,14 +437,13 @@ export const startProcessing = async (jobId: string): Promise<void> => {
     });
     job.progress = 100;
     job.status = "completed";
-
-    // Cleanup after delay
-    setTimeout(() => {
-      deleteJob(jobId);
-    }, JOB_CLEANUP_DELAY);
+    job.tracks = [];
+    scheduleJobCleanup(jobId, COMPLETED_JOB_CLEANUP_DELAY);
   } catch (error) {
     job.status = "error";
     job.error = error instanceof Error ? error.message : "Unknown error";
+    job.tracks = [];
+    scheduleJobCleanup(jobId, ERROR_JOB_CLEANUP_DELAY);
     console.error(`Job ${jobId} failed:`, error);
   } finally {
     // Process next pending job in queue

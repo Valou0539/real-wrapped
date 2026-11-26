@@ -500,4 +500,113 @@ describe("enhance-history job genre enrichment", () => {
     expect(service.cancelJob(completedId)).toBe(false);
     expect(service.getJob(completedId)).toBeDefined();
   });
+
+  it("limits active jobs per IP", async () => {
+    const service = await importJobService();
+    service.createJob([track("A1", "Plain")], "203.0.113.10");
+
+    expect(() =>
+      service.createJob([track("A2", "Plain")], "203.0.113.10"),
+    ).toThrow(service.JobQueueFullError);
+    expect(() =>
+      service.createJob([track("A3", "Plain")], "203.0.113.11"),
+    ).not.toThrow();
+  });
+
+  it("keeps the jobs map bounded under repeated creation", async () => {
+    const service = await importJobService();
+
+    for (let index = 0; index < 50; index++) {
+      try {
+        service.createJob([track("A", "Plain")], `203.0.113.${index + 1}`);
+      } catch (error) {
+        expect(error).toBeInstanceOf(service.JobQueueFullError);
+      }
+    }
+
+    const jobs = globalThis.__enhanceHistoryJobs;
+    expect(jobs.size).toBe(service.MAX_PENDING_JOBS);
+    expect(jobs.size).toBeLessThanOrEqual(service.MAX_TRACKED_JOBS);
+  });
+
+  it("counts stored completed jobs toward the global capacity", async () => {
+    const service = await importJobService();
+
+    for (let index = 0; index < service.MAX_TRACKED_JOBS; index++) {
+      const jobId = service.createJob(
+        [track("A", "Plain")],
+        `203.0.113.${index + 1}`,
+      );
+      const job = service.getJob(jobId);
+      if (!job) throw new Error("missing job");
+      job.status = "completed";
+    }
+
+    expect(globalThis.__enhanceHistoryJobs.size).toBe(service.MAX_TRACKED_JOBS);
+    expect(() =>
+      service.createJob([track("A", "Plain")], "203.0.113.99"),
+    ).toThrow(service.JobQueueFullError);
+  });
+
+  it("expires completed jobs after the reduced retention delay", async () => {
+    vi.useFakeTimers();
+    try {
+      runtimeConfig.values.spotifyClientId = "";
+      runtimeConfig.values.spotifyClientSecret = "";
+      const service = await importJobService();
+      const jobId = service.createJob([track("A", "Plain")], "203.0.113.10");
+      await service.startProcessing(jobId);
+
+      expect(service.getJob(jobId)?.status).toBe("completed");
+      expect(service.getJob(jobId)?.tracks).toHaveLength(0);
+      vi.advanceTimersByTime(service.COMPLETED_JOB_CLEANUP_DELAY - 1);
+      expect(service.getJob(jobId)).toBeDefined();
+      vi.advanceTimersByTime(1);
+      expect(service.getJob(jobId)).toBeUndefined();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("expires error jobs and releases their input tracks", async () => {
+    vi.useFakeTimers();
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      const service = await importJobService();
+      const jobId = service.createJob([track("A", "Plain")], "203.0.113.10");
+      const job = service.getJob(jobId);
+      if (!job) throw new Error("missing job");
+      job.tracks.map = (() => {
+        throw new Error("boom");
+      }) as unknown as typeof job.tracks.map;
+
+      await service.startProcessing(jobId);
+
+      expect(service.getJob(jobId)?.status).toBe("error");
+      expect(service.getJob(jobId)?.tracks).toHaveLength(0);
+      vi.advanceTimersByTime(service.ERROR_JOB_CLEANUP_DELAY - 1);
+      expect(service.getJob(jobId)).toBeDefined();
+      vi.advanceTimersByTime(1);
+      expect(service.getJob(jobId)).toBeUndefined();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("caps Spotify enrichment work for a single job", async () => {
+    fetchMock.mockImplementation(async (url: string) =>
+      isToken(url) ? token() : artistsPayload(),
+    );
+    const service = await importJobService();
+    const tracks = Array.from(
+      { length: service.MAX_SPOTIFY_ENRICHMENT_ITEMS + 10 },
+      (_, index) => track(`Artist ${index + 1}`, "Plain"),
+    );
+
+    const jobId = service.createJob(tracks, "203.0.113.10");
+    await service.startProcessing(jobId);
+
+    expect(service.getJob(jobId)?.status).toBe("completed");
+    expect(artistSearches()).toHaveLength(service.MAX_SPOTIFY_ENRICHMENT_ITEMS);
+  });
 });
