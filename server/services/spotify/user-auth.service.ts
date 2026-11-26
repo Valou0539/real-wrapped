@@ -4,6 +4,7 @@ import {
   randomUUID,
   timingSafeEqual,
 } from "node:crypto";
+import { isIPv4 } from "node:net";
 import {
   getCookie,
   getRequestProtocol,
@@ -135,13 +136,16 @@ const sanitizeReturnUrl = (value: unknown): string => {
     const url = new URL(value);
     if (url.protocol !== "http:" && url.protocol !== "https:") return "/";
     const host = url.hostname;
+    const privateIpv4 =
+      isIPv4(host) &&
+      (/^10\./.test(host) ||
+        /^192\.168\./.test(host) ||
+        /^172\.(1[6-9]|2\d|3[01])\./.test(host));
     const trusted =
       host === "localhost" ||
       host === "127.0.0.1" ||
       host === "::1" ||
-      /^10\./.test(host) ||
-      /^192\.168\./.test(host) ||
-      /^172\.(1[6-9]|2\d|3[01])\./.test(host);
+      privateIpv4;
     if (!trusted) return "/";
     return url.toString();
   } catch {

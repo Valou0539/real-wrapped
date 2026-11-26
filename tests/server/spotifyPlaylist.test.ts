@@ -36,6 +36,11 @@ const trackSearchItem = (name: string, artists: string[]) => ({
   artists: artists.map((artist) => ({ name: artist })),
 });
 
+const loginStateReturnUrl = (stateCookie: string): string => {
+  const [payload] = stateCookie.split(".");
+  return JSON.parse(Buffer.from(payload!, "base64url").toString()).returnUrl;
+};
+
 const importServices = async () => {
   vi.resetModules();
   const auth = await import("../../server/services/spotify/user-auth.service");
@@ -373,6 +378,35 @@ describe("spotify user auth", () => {
     const { next } = await login(auth, browser, "https://evil.example.com/x");
     expect(next).toBe("/");
     expect(await isAuthenticated(auth, browser)).toBe(true);
+
+    const deceptive = await login(
+      auth,
+      createBrowser(),
+      "https://10.evil.example/",
+    );
+    expect(deceptive.next).toBe("/");
+
+    for (const returnUrl of [
+      "https://10.evil.example/",
+      "https://192.168.evil.example/",
+      "https://172.16.evil.example/",
+    ]) {
+      const { stateCookie } = auth.buildAuthorizeUrl(
+        returnUrl,
+        REDIRECT,
+        BINDING,
+      );
+      expect(loginStateReturnUrl(stateCookie)).toBe("/");
+    }
+
+    const privateNetwork = auth.buildAuthorizeUrl(
+      "http://10.0.0.1:3000/x",
+      REDIRECT,
+      BINDING,
+    );
+    expect(loginStateReturnUrl(privateNetwork.stateCookie)).toBe(
+      "http://10.0.0.1:3000/x",
+    );
   });
 
   it("logs in on the callback origin when the user is not on its loopback twin", async () => {
