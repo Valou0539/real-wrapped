@@ -1,10 +1,23 @@
-import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";
+import {
+  createHash,
+  createHmac,
+  randomUUID,
+  timingSafeEqual,
+} from "node:crypto";
+import {
+  getCookie,
+  getRequestProtocol,
+  useSession,
+  type H3Event,
+  type SessionConfig,
+} from "h3";
 import { SpotifyCatalogError } from "./catalog.service";
 
 /**
  * User-context Spotify auth (Authorization Code flow with client secret: the
- * app has a backend). Single-user personal app — one token set held in memory
- * server-side; restarting the server simply requires logging in again.
+ * app has a backend). Each browser holds its own token set, sealed
+ * (encrypted + authenticated) in an httpOnly session cookie: nothing is
+ * shared between visitors and the server keeps no token in memory.
  * Only the playlist-modify-private scope is requested: created playlists are
  * private, nothing broader is needed.
  */
@@ -24,10 +37,16 @@ interface LoginState {
   state: string;
   returnUrl: string;
   redirectUri: string;
+  binding: string;
   expiresAt: number;
 }
 
-let tokens: UserTokens | undefined;
+interface SessionHandoff {
+  tokens: UserTokens;
+  binding: string;
+  returnUrl: string;
+  expiresAt: number;
+}
 
 /**
  * The pending login lives in a signed httpOnly cookie on the browser that
@@ -36,6 +55,28 @@ let tokens: UserTokens | undefined;
  */
 export const LOGIN_STATE_COOKIE = "spotify_login_state";
 export const LOGIN_STATE_MAX_AGE = 600;
+
+/**
+ * In loopback dev the callback lands on 127.0.0.1 while the user may browse
+ * localhost: the tokens then reach the browsing origin through a single-use,
+ * short-lived handoff redeemed at SESSION_PATH, which only succeeds with the
+ * binding cookie set on that origin when the login started.
+ */
+export const LOGIN_BINDING_COOKIE = "spotify_login_binding";
+export const SESSION_PATH = "/api/spotify/session";
+const SESSION_COOKIE = "spotify_session";
+const SESSION_COOKIE_PATH = "/api/spotify";
+const SESSION_MAX_AGE = 30 * 24 * 3600;
+const HANDOFF_TTL = 60_000;
+const BINDING_PATTERN =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+
+const handoffs = new Map<string, SessionHandoff>();
+
+export const isLoginBinding = (value: unknown): value is string =>
+  typeof value === "string" && BINDING_PATTERN.test(value);
+
+export const createLoginBinding = (): string => randomUUID();
 
 const config = () => {
   const runtime = useRuntimeConfig();
@@ -138,6 +179,7 @@ const decodeLoginState = (cookie: unknown): LoginState | undefined => {
       typeof login.state !== "string" ||
       typeof login.returnUrl !== "string" ||
       typeof login.redirectUri !== "string" ||
+      typeof login.binding !== "string" ||
       typeof login.expiresAt !== "number"
     ) {
       return undefined;
@@ -148,7 +190,7 @@ const decodeLoginState = (cookie: unknown): LoginState | undefined => {
   }
 };
 
-const sameState = (a: string, b: string): boolean => {
+const sameSecret = (a: string, b: string): boolean => {
   const left = Buffer.from(a);
   const right = Buffer.from(b);
   return left.length === right.length && timingSafeEqual(left, right);
@@ -160,7 +202,7 @@ const boundLoginState = (
 ): LoginState | undefined => {
   const login = decodeLoginState(stateCookie);
   if (!login || login.expiresAt <= Date.now()) return undefined;
-  return sameState(login.state, state) ? login : undefined;
+  return sameSecret(login.state, state) ? login : undefined;
 };
 
 /** Whether the browser's state cookie is the one issued for this state. */
@@ -169,11 +211,13 @@ export const isLoginStateFor = (stateCookie: unknown, state: string): boolean =>
 
 /**
  * Returns the Spotify authorize URL and the signed cookie value binding its
- * state to the browser starting the login.
+ * state to the browser starting the login. `binding` is the value of the
+ * binding cookie set on the origin the user browses.
  */
 export const buildAuthorizeUrl = (
   returnUrl: unknown,
   redirectUri: string,
+  binding: string,
 ): { url: string; stateCookie: string } => {
   const { clientId } = config();
   if (!isSpotifyUserAuthConfigured() || !clientId || !redirectUri) {
@@ -185,6 +229,7 @@ export const buildAuthorizeUrl = (
     state,
     returnUrl: sanitizeReturnUrl(returnUrl),
     redirectUri,
+    binding,
     expiresAt: Date.now() + LOGIN_STATE_MAX_AGE * 1000,
   });
 
@@ -227,12 +272,84 @@ const tokenRequest = async (body: URLSearchParams) => {
   };
 };
 
+const sessionConfig = (event: H3Event): SessionConfig => ({
+  name: SESSION_COOKIE,
+  password: createHash("sha256")
+    .update(`spotify-session:${config().clientSecret ?? ""}`)
+    .digest("hex"),
+  maxAge: SESSION_MAX_AGE,
+  sessionHeader: false,
+  cookie: {
+    httpOnly: true,
+    sameSite: "strict",
+    secure: getRequestProtocol(event) === "https",
+    path: SESSION_COOKIE_PATH,
+  },
+});
+
+const readTokens = async (event: H3Event): Promise<UserTokens | undefined> => {
+  if (!getCookie(event, SESSION_COOKIE)) return undefined;
+  const session = await useSession<Partial<UserTokens>>(
+    event,
+    sessionConfig(event),
+  );
+  const { accessToken, refreshToken, expiresAt } = session.data;
+  if (
+    typeof accessToken !== "string" ||
+    typeof refreshToken !== "string" ||
+    typeof expiresAt !== "number"
+  ) {
+    return undefined;
+  }
+  return { accessToken, refreshToken, expiresAt };
+};
+
+const writeTokens = async (event: H3Event, tokens: UserTokens) => {
+  const session = await useSession<Partial<UserTokens>>(
+    event,
+    sessionConfig(event),
+  );
+  await session.update({ ...tokens });
+};
+
+const pruneHandoffs = () => {
+  const now = Date.now();
+  for (const [id, handoff] of handoffs) {
+    if (handoff.expiresAt <= now) handoffs.delete(id);
+  }
+};
+
+const isLoopback = (url: URL) =>
+  ["localhost", "127.0.0.1", "[::1]", "::1"].includes(url.hostname);
+
 /**
- * Validates the login state against the browser's signed state cookie,
- * exchanges the code and stores the session.
- * Returns the URL to send the user back to.
+ * A handoff URL carries a bearer id: it is only sent to the loopback twin of
+ * a loopback callback (localhost vs 127.0.0.1, same scheme and port — the
+ * same server), never to another host.
+ */
+const isHandoffTarget = (target: URL, callback: URL) =>
+  isLoopback(target) &&
+  isLoopback(callback) &&
+  target.protocol === callback.protocol &&
+  target.port === callback.port;
+
+const saveTokens = async (event: H3Event, tokens: UserTokens) => {
+  const previous = await readTokens(event);
+  await writeTokens(event, {
+    ...tokens,
+    // Spotify may omit refresh_token on re-consent: keep this browser's one.
+    refreshToken: tokens.refreshToken || previous?.refreshToken || "",
+  });
+};
+
+/**
+ * Validates the login state against the browser's signed state cookie and
+ * exchanges the code. The tokens are stored in this browser's session, or
+ * parked in a single-use handoff when the user browses the loopback twin of
+ * the callback origin. Returns the URL to send the user to.
  */
 export const exchangeCode = async (
+  event: H3Event,
   code: string,
   state: string,
   stateCookie: unknown,
@@ -241,7 +358,7 @@ export const exchangeCode = async (
   if (!login) {
     throw new SpotifyCatalogError(400, "Unknown or expired login state");
   }
-  const { returnUrl, redirectUri } = login;
+  const { returnUrl, redirectUri, binding } = login;
 
   const response = await tokenRequest(
     new URLSearchParams({
@@ -250,47 +367,96 @@ export const exchangeCode = async (
       redirect_uri: redirectUri,
     }),
   );
-  tokens = {
+  const tokens: UserTokens = {
     accessToken: response.access_token,
-    // Spotify may omit refresh_token on re-consent: keep the previous one.
-    refreshToken: response.refresh_token ?? tokens?.refreshToken ?? "",
+    refreshToken: response.refresh_token ?? "",
     expiresAt: Date.now() + response.expires_in * 1000 - 30_000,
   };
-  return returnUrl;
+
+  const callback = new URL(redirectUri);
+  const target = new URL(returnUrl, callback);
+  if (target.origin !== callback.origin && isHandoffTarget(target, callback)) {
+    pruneHandoffs();
+    const id = randomUUID();
+    handoffs.set(id, {
+      tokens,
+      binding,
+      returnUrl,
+      expiresAt: Date.now() + HANDOFF_TTL,
+    });
+    const query = new URLSearchParams({ handoff: id }).toString();
+    return `${target.origin}${SESSION_PATH}?${query}`;
+  }
+
+  // The session cookie lives on the callback origin: stay there.
+  await saveTokens(event, tokens);
+  // Collapse leading slashes: "//host" would be an off-site redirect.
+  const path = target.pathname.replace(/^\/+/, "/");
+  return `${path}${target.search}${target.hash}`;
 };
 
-export const isUserAuthenticated = (): boolean =>
-  !!tokens?.accessToken && !!tokens.refreshToken;
+/**
+ * Stores the handed-off tokens in this browser's session, provided it holds
+ * the binding cookie of the login. Returns the URL to send the user back to.
+ */
+export const redeemSessionHandoff = async (
+  event: H3Event,
+  handoffId: unknown,
+  bindingCookie: unknown,
+): Promise<string> => {
+  pruneHandoffs();
+  const handoff =
+    typeof handoffId === "string" ? handoffs.get(handoffId) : undefined;
+  if (
+    !handoff ||
+    !isLoginBinding(bindingCookie) ||
+    !sameSecret(handoff.binding, bindingCookie)
+  ) {
+    throw new SpotifyCatalogError(400, "Unknown or expired login handoff");
+  }
+  handoffs.delete(handoffId as string);
 
-export const logoutUser = (): void => {
-  tokens = undefined;
+  await saveTokens(event, handoff.tokens);
+  return handoff.returnUrl;
 };
 
-export const getUserAccessToken = async (): Promise<string> => {
+export const isUserAuthenticated = async (event: H3Event): Promise<boolean> => {
+  const tokens = await readTokens(event);
+  return !!tokens?.accessToken && !!tokens.refreshToken;
+};
+
+export const logoutUser = async (event: H3Event): Promise<void> => {
+  if (!getCookie(event, SESSION_COOKIE)) return;
+  const session = await useSession(event, sessionConfig(event));
+  await session.clear();
+};
+
+export const getUserAccessToken = async (event: H3Event): Promise<string> => {
+  const tokens = await readTokens(event);
   if (!tokens?.accessToken) {
     throw new SpotifyCatalogError(401, "Spotify user is not authenticated");
   }
   if (tokens.expiresAt > Date.now()) return tokens.accessToken;
   if (!tokens.refreshToken) {
-    tokens = undefined;
+    await logoutUser(event);
     throw new SpotifyCatalogError(401, "Spotify user session expired");
   }
 
-  const currentRefresh = tokens.refreshToken;
   const response = await tokenRequest(
     new URLSearchParams({
       grant_type: "refresh_token",
-      refresh_token: currentRefresh,
+      refresh_token: tokens.refreshToken,
     }),
-  ).catch((error) => {
+  ).catch(async (error) => {
     // A failed refresh invalidates the session: re-login is required.
-    tokens = undefined;
+    await logoutUser(event);
     throw error;
   });
-  tokens = {
+  const refreshed = {
     accessToken: response.access_token,
-    refreshToken: response.refresh_token ?? currentRefresh,
+    refreshToken: response.refresh_token ?? tokens.refreshToken,
     expiresAt: Date.now() + response.expires_in * 1000 - 30_000,
   };
-  return tokens.accessToken;
+  await writeTokens(event, refreshed);
+  return refreshed.accessToken;
 };

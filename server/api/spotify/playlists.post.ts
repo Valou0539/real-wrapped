@@ -31,7 +31,7 @@ export default defineEventHandler(async (event) => {
       statusMessage: "Spotify user auth is not configured",
     });
   }
-  if (!isUserAuthenticated()) {
+  if (!(await isUserAuthenticated(event))) {
     throw createError({
       statusCode: 401,
       statusMessage: "Spotify login required",
@@ -45,6 +45,7 @@ export default defineEventHandler(async (event) => {
 
   try {
     return await createPlaylistWithTracks(
+      event,
       parsed.data.name,
       parsed.data.description,
       parsed.data.tracks,
