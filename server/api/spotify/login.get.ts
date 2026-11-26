@@ -14,9 +14,14 @@ export default defineEventHandler((event) => {
   const redirectUri = resolveRedirectUri(origin);
   const callback = new URL(redirectUri);
 
-  // The state cookie must be set on the host Spotify redirects back to
-  // (e.g. 127.0.0.1 while browsing localhost): hop there once first.
-  if (callback.hostname !== new URL(origin).hostname && !query.hop) {
+  // The state cookie must be set by the host and scheme Spotify redirects
+  // back to (e.g. 127.0.0.1 while browsing localhost, or HTTPS for a Secure
+  // cookie): hop there once first.
+  const current = new URL(origin);
+  const sameTarget =
+    callback.hostname === current.hostname &&
+    callback.protocol === current.protocol;
+  if (!sameTarget && !query.hop) {
     const hop = new URLSearchParams({ return: returnUrl, hop: "1" });
     return sendRedirect(
       event,
