@@ -1,10 +1,20 @@
-import { exchangeCode } from "../../services/spotify/user-auth.service";
+import {
+  exchangeCode,
+  LOGIN_STATE_COOKIE,
+} from "../../services/spotify/user-auth.service";
 import { SpotifyCatalogError } from "../../services/spotify/catalog.service";
 
 export default defineEventHandler(async (event) => {
   const query = getQuery(event);
   const code = typeof query.code === "string" ? query.code : "";
   const state = typeof query.state === "string" ? query.state : "";
+  const stateCookie = getCookie(event, LOGIN_STATE_COOKIE);
+  // Single-use: the pending login is consumed whatever the outcome.
+  if (stateCookie !== undefined) {
+    deleteCookie(event, LOGIN_STATE_COOKIE, {
+      path: getRequestURL(event).pathname,
+    });
+  }
 
   if (!code || !state) {
     throw createError({
@@ -14,7 +24,7 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    const returnUrl = await exchangeCode(code, state);
+    const returnUrl = await exchangeCode(code, state, stateCookie);
     return sendRedirect(event, returnUrl || "/", 302);
   } catch (error) {
     // Revisiting the callback URL (browser back/forward, refresh) replays a

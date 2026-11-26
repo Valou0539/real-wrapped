@@ -1,3 +1,4 @@
+import { createHmac, randomUUID, timingSafeEqual } from "node:crypto";
 import { SpotifyCatalogError } from "./catalog.service";
 
 /**
@@ -19,8 +20,22 @@ interface UserTokens {
   expiresAt: number;
 }
 
+interface LoginState {
+  state: string;
+  returnUrl: string;
+  redirectUri: string;
+  expiresAt: number;
+}
+
 let tokens: UserTokens | undefined;
-let pendingLogins: { state: string; returnUrl: string; redirectUri: string }[] = [];
+
+/**
+ * The pending login lives in a signed httpOnly cookie on the browser that
+ * started it (no server-side list): the callback only accepts a state that
+ * matches the cookie sent by that same browser.
+ */
+export const LOGIN_STATE_COOKIE = "spotify_login_state";
+export const LOGIN_STATE_MAX_AGE = 600;
 
 const config = () => {
   const runtime = useRuntimeConfig();
@@ -93,23 +108,72 @@ const sanitizeReturnUrl = (value: unknown): string => {
   }
 };
 
+const signLoginState = (payload: string): string =>
+  createHmac("sha256", `spotify-login-state:${config().clientSecret ?? ""}`)
+    .update(payload)
+    .digest("base64url");
+
+const encodeLoginState = (login: LoginState): string => {
+  const payload = Buffer.from(JSON.stringify(login)).toString("base64url");
+  return `${payload}.${signLoginState(payload)}`;
+};
+
+const decodeLoginState = (cookie: unknown): LoginState | undefined => {
+  if (typeof cookie !== "string") return undefined;
+  const [payload, signature, ...rest] = cookie.split(".");
+  if (!payload || !signature || rest.length) return undefined;
+  const expected = Buffer.from(signLoginState(payload));
+  const received = Buffer.from(signature);
+  if (
+    expected.length !== received.length ||
+    !timingSafeEqual(expected, received)
+  ) {
+    return undefined;
+  }
+  try {
+    const login = JSON.parse(
+      Buffer.from(payload, "base64url").toString(),
+    ) as Partial<LoginState>;
+    if (
+      typeof login.state !== "string" ||
+      typeof login.returnUrl !== "string" ||
+      typeof login.redirectUri !== "string" ||
+      typeof login.expiresAt !== "number"
+    ) {
+      return undefined;
+    }
+    return login as LoginState;
+  } catch {
+    return undefined;
+  }
+};
+
+const sameState = (a: string, b: string): boolean => {
+  const left = Buffer.from(a);
+  const right = Buffer.from(b);
+  return left.length === right.length && timingSafeEqual(left, right);
+};
+
+/**
+ * Returns the Spotify authorize URL and the signed cookie value binding its
+ * state to the browser starting the login.
+ */
 export const buildAuthorizeUrl = (
   returnUrl: unknown,
   redirectUri: string,
-): string => {
+): { url: string; stateCookie: string } => {
   const { clientId } = config();
   if (!isSpotifyUserAuthConfigured() || !clientId || !redirectUri) {
     throw new SpotifyCatalogError(503, "Spotify user auth is not configured");
   }
 
-  const state = crypto.randomUUID();
-  pendingLogins.push({
+  const state = randomUUID();
+  const stateCookie = encodeLoginState({
     state,
     returnUrl: sanitizeReturnUrl(returnUrl),
     redirectUri,
+    expiresAt: Date.now() + LOGIN_STATE_MAX_AGE * 1000,
   });
-  // Only a handful of concurrent logins ever happen; drop stale states.
-  if (pendingLogins.length > 20) pendingLogins = pendingLogins.slice(-20);
 
   const params = new URLSearchParams({
     client_id: clientId,
@@ -118,7 +182,7 @@ export const buildAuthorizeUrl = (
     scope: SCOPES,
     state,
   });
-  return `${AUTHORIZE_URL}?${params.toString()}`;
+  return { url: `${AUTHORIZE_URL}?${params.toString()}`, stateCookie };
 };
 
 const tokenRequest = async (body: URLSearchParams) => {
@@ -151,18 +215,24 @@ const tokenRequest = async (body: URLSearchParams) => {
 };
 
 /**
- * Validates the login state, exchanges the code and stores the session.
+ * Validates the login state against the browser's signed state cookie,
+ * exchanges the code and stores the session.
  * Returns the URL to send the user back to.
  */
 export const exchangeCode = async (
   code: string,
   state: string,
+  stateCookie: unknown,
 ): Promise<string> => {
-  const index = pendingLogins.findIndex((entry) => entry.state === state);
-  if (index === -1) {
+  const login = decodeLoginState(stateCookie);
+  if (
+    !login ||
+    login.expiresAt <= Date.now() ||
+    !sameState(login.state, state)
+  ) {
     throw new SpotifyCatalogError(400, "Unknown or expired login state");
   }
-  const [{ returnUrl, redirectUri }] = pendingLogins.splice(index, 1);
+  const { returnUrl, redirectUri } = login;
 
   const response = await tokenRequest(
     new URLSearchParams({
