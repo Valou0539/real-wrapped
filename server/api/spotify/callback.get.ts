@@ -1,5 +1,6 @@
 import {
   exchangeCode,
+  isLoginStateFor,
   LOGIN_STATE_COOKIE,
 } from "../../services/spotify/user-auth.service";
 import { SpotifyCatalogError } from "../../services/spotify/catalog.service";
@@ -9,8 +10,10 @@ export default defineEventHandler(async (event) => {
   const code = typeof query.code === "string" ? query.code : "";
   const state = typeof query.state === "string" ? query.state : "";
   const stateCookie = getCookie(event, LOGIN_STATE_COOKIE);
-  // Single-use: the pending login is consumed whatever the outcome.
-  if (stateCookie !== undefined) {
+  // Single-use: the pending login is consumed once its state is presented,
+  // whatever the outcome. A stale callback (e.g. an older tab) leaves the
+  // newer pending login untouched.
+  if (isLoginStateFor(stateCookie, state)) {
     deleteCookie(event, LOGIN_STATE_COOKIE, {
       path: getRequestURL(event).pathname,
     });

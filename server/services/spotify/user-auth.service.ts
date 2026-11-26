@@ -154,6 +154,19 @@ const sameState = (a: string, b: string): boolean => {
   return left.length === right.length && timingSafeEqual(left, right);
 };
 
+const boundLoginState = (
+  stateCookie: unknown,
+  state: string,
+): LoginState | undefined => {
+  const login = decodeLoginState(stateCookie);
+  if (!login || login.expiresAt <= Date.now()) return undefined;
+  return sameState(login.state, state) ? login : undefined;
+};
+
+/** Whether the browser's state cookie is the one issued for this state. */
+export const isLoginStateFor = (stateCookie: unknown, state: string): boolean =>
+  !!boundLoginState(stateCookie, state);
+
 /**
  * Returns the Spotify authorize URL and the signed cookie value binding its
  * state to the browser starting the login.
@@ -224,12 +237,8 @@ export const exchangeCode = async (
   state: string,
   stateCookie: unknown,
 ): Promise<string> => {
-  const login = decodeLoginState(stateCookie);
-  if (
-    !login ||
-    login.expiresAt <= Date.now() ||
-    !sameState(login.state, state)
-  ) {
+  const login = boundLoginState(stateCookie, state);
+  if (!login) {
     throw new SpotifyCatalogError(400, "Unknown or expired login state");
   }
   const { returnUrl, redirectUri } = login;
