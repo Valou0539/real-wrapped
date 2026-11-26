@@ -1,3 +1,4 @@
+import type { H3Event } from "h3";
 import { SpotifyCatalogError } from "./catalog.service";
 import { getSharedSpotifyCatalog } from "./catalog-instance";
 import { getUserAccessToken } from "./user-auth.service";
@@ -31,11 +32,12 @@ export interface PlaylistResult {
 }
 
 const authedFetch = async <T>(
+  event: H3Event,
   path: string,
   options: Record<string, unknown> = {},
 ): Promise<T> => {
   for (let attempt = 0; attempt < 3; attempt++) {
-    const accessToken = await getUserAccessToken();
+    const accessToken = await getUserAccessToken(event);
     try {
       return await $fetch<T>(`${API_URL}${path}`, {
         retry: 0,
@@ -85,6 +87,7 @@ const authedFetch = async <T>(
 };
 
 export const createPlaylistWithTracks = async (
+  event: H3Event,
   name: string,
   description: string,
   tracks: PlaylistTrackInput[],
@@ -95,7 +98,7 @@ export const createPlaylistWithTracks = async (
   }
 
   // Fail fast before any resolution work when the session is missing/expired.
-  await getUserAccessToken();
+  await getUserAccessToken(event);
 
   // Resolve missing Spotify ids, in input order, through the shared catalog
   // (24h cache + patient retry + concurrency cap already in place there).
@@ -135,7 +138,7 @@ export const createPlaylistWithTracks = async (
 
   const playlist = await authedFetch<{
     external_urls?: { spotify?: string };
-  }>("/me/playlists", {
+  }>(event, "/me/playlists", {
     method: "POST",
     body: { name, description, public: false },
   });
@@ -148,7 +151,7 @@ export const createPlaylistWithTracks = async (
   // Order is significant: sequential batches so the playlist matches the
   // ranking. 100 items per request max (API limit).
   for (let offset = 0; offset < uris.length; offset += BATCH_SIZE) {
-    await authedFetch(`/playlists/${playlistId}/items`, {
+    await authedFetch(event, `/playlists/${playlistId}/items`, {
       method: "POST",
       body: { uris: uris.slice(offset, offset + BATCH_SIZE) },
     });

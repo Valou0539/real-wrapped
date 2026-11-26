@@ -27,8 +27,8 @@ export default defineEventHandler(async (event) => {
   }
 
   try {
-    const returnUrl = await exchangeCode(code, state, stateCookie);
-    return sendRedirect(event, returnUrl || "/", 302);
+    const sessionUrl = await exchangeCode(code, state, stateCookie);
+    return sendRedirect(event, sessionUrl, 302);
   } catch (error) {
     // Revisiting the callback URL (browser back/forward, refresh) replays a
     // single-use state: instead of an error page trapping the user outside
