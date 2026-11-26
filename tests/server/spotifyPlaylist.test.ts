@@ -44,9 +44,9 @@ const importServices = async () => {
 const login = async (
   auth: Awaited<ReturnType<typeof importServices>>["auth"],
 ) => {
-  const authorizeUrl = auth.buildAuthorizeUrl("http://localhost:3000/", "http://127.0.0.1:3000/api/spotify/callback");
-  const state = new URL(authorizeUrl).searchParams.get("state") ?? "";
-  return auth.exchangeCode("code-123", state);
+  const { url, stateCookie } = auth.buildAuthorizeUrl("http://localhost:3000/", "http://127.0.0.1:3000/api/spotify/callback");
+  const state = new URL(url).searchParams.get("state") ?? "";
+  return auth.exchangeCode("code-123", state, stateCookie);
 };
 
 describe("spotify user auth", () => {
@@ -54,13 +54,13 @@ describe("spotify user auth", () => {
     fetchMock.mockReset();
   });
 
-  it("builds a scoped authorize url and exchanges the code once per state", async () => {
+  it("builds a scoped authorize url and exchanges the code for the browser's state", async () => {
     fetchMock.mockImplementation(async (url: string) =>
       isToken(url) ? userToken() : {},
     );
     const { auth } = await importServices();
 
-    const url = auth.buildAuthorizeUrl("http://localhost:3000/artists/x", "http://127.0.0.1:3000/api/spotify/callback");
+    const { url, stateCookie } = auth.buildAuthorizeUrl("http://localhost:3000/artists/x", "http://127.0.0.1:3000/api/spotify/callback");
     const parsed = new URL(url);
     expect(parsed.origin + parsed.pathname).toBe(
       "https://accounts.spotify.com/authorize",
@@ -74,14 +74,78 @@ describe("spotify user auth", () => {
 
     expect(auth.isUserAuthenticated()).toBe(false);
     const state = parsed.searchParams.get("state") ?? "";
-    const returnUrl = await auth.exchangeCode("code-123", state);
+    const returnUrl = await auth.exchangeCode("code-123", state, stateCookie);
     expect(returnUrl).toBe("http://localhost:3000/artists/x");
     expect(auth.isUserAuthenticated()).toBe(true);
+  });
 
-    // A state is single-use.
-    await expect(auth.exchangeCode("code-123", state)).rejects.toMatchObject({
-      statusCode: 400,
-    });
+  it("rejects a state that is not bound to the browser's cookie", async () => {
+    fetchMock.mockImplementation(async (url: string) =>
+      isToken(url) ? userToken() : {},
+    );
+    const { auth } = await importServices();
+    const redirect = "http://127.0.0.1:3000/api/spotify/callback";
+    const victim = auth.buildAuthorizeUrl("http://localhost:3000/", redirect);
+    const attacker = auth.buildAuthorizeUrl("http://localhost:3000/", redirect);
+    const attackerState =
+      new URL(attacker.url).searchParams.get("state") ?? "";
+    const victimState = new URL(victim.url).searchParams.get("state") ?? "";
+
+    // Callback opened from another browser (no cookie) or with someone
+    // else's state (login CSRF).
+    await expect(
+      auth.exchangeCode("code-123", attackerState, undefined),
+    ).rejects.toMatchObject({ statusCode: 400 });
+    await expect(
+      auth.exchangeCode("code-123", attackerState, victim.stateCookie),
+    ).rejects.toMatchObject({ statusCode: 400 });
+    // Tampered cookie.
+    const [payload, signature] = victim.stateCookie.split(".");
+    const forged = Buffer.from(
+      JSON.stringify({
+        ...JSON.parse(Buffer.from(payload!, "base64url").toString()),
+        returnUrl: "http://10.0.0.1/",
+      }),
+    ).toString("base64url");
+    await expect(
+      auth.exchangeCode("code-123", victimState, `${forged}.${signature}`),
+    ).rejects.toMatchObject({ statusCode: 400 });
+    expect(fetchMock).not.toHaveBeenCalled();
+    expect(auth.isUserAuthenticated()).toBe(false);
+  });
+
+  it("keeps a pending login valid whatever the number of other logins", async () => {
+    fetchMock.mockImplementation(async (url: string) =>
+      isToken(url) ? userToken() : {},
+    );
+    const { auth } = await importServices();
+    const redirect = "http://127.0.0.1:3000/api/spotify/callback";
+    const victim = auth.buildAuthorizeUrl("http://localhost:3000/x", redirect);
+    for (let i = 0; i < 30; i++) {
+      auth.buildAuthorizeUrl("http://localhost:3000/", redirect);
+    }
+    const state = new URL(victim.url).searchParams.get("state") ?? "";
+    expect(await auth.exchangeCode("code-123", state, victim.stateCookie)).toBe(
+      "http://localhost:3000/x",
+    );
+  });
+
+  it("rejects an expired login state", async () => {
+    const { auth } = await importServices();
+    const { url, stateCookie } = auth.buildAuthorizeUrl(
+      "http://localhost:3000/",
+      "http://127.0.0.1:3000/api/spotify/callback",
+    );
+    const state = new URL(url).searchParams.get("state") ?? "";
+    vi.useFakeTimers();
+    vi.setSystemTime(Date.now() + auth.LOGIN_STATE_MAX_AGE * 1000 + 1);
+    try {
+      await expect(
+        auth.exchangeCode("code-123", state, stateCookie),
+      ).rejects.toMatchObject({ statusCode: 400 });
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("derives the redirect uri from the origin unless overridden", async () => {
@@ -113,9 +177,9 @@ describe("spotify user auth", () => {
     );
     const { auth } = await importServices();
     const dynamic = "https://localhost:3000/api/spotify/callback";
-    const url = auth.buildAuthorizeUrl("http://localhost:3000/", dynamic);
+    const { url, stateCookie } = auth.buildAuthorizeUrl("http://localhost:3000/", dynamic);
     const state = new URL(url).searchParams.get("state") ?? "";
-    await auth.exchangeCode("code-123", state);
+    await auth.exchangeCode("code-123", state, stateCookie);
     const body = fetchMock.mock.calls.find(([u]) => isToken(u))?.[1]?.body;
     expect(body).toContain(
       `redirect_uri=${encodeURIComponent(dynamic)}`,
@@ -124,12 +188,12 @@ describe("spotify user auth", () => {
 
   it("rejects untrusted return urls", async () => {
     const { auth } = await importServices();
-    const url = auth.buildAuthorizeUrl("https://evil.example.com/x", "http://127.0.0.1:3000/api/spotify/callback");
+    const { url, stateCookie } = auth.buildAuthorizeUrl("https://evil.example.com/x", "http://127.0.0.1:3000/api/spotify/callback");
     const state = new URL(url).searchParams.get("state") ?? "";
     fetchMock.mockImplementation(async (u: string) =>
       isToken(u) ? userToken() : {},
     );
-    expect(await auth.exchangeCode("c", state)).toBe("/");
+    expect(await auth.exchangeCode("c", state, stateCookie)).toBe("/");
   });
 
   it("refreshes an expired access token", async () => {
