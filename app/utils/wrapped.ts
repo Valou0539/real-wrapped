@@ -105,8 +105,11 @@ export const computeTopTracks = (
         trackName: track.trackName,
         artistName: track.artistName,
         // Resolution is consistent per artist+track key, so carrying the
-        // first occurrence's credited artists is enough.
+        // first occurrence's credited artists and Spotify id is enough.
         ...(track.artists?.length ? { artists: track.artists } : {}),
+        ...(track.spotifyTrackId
+          ? { spotifyTrackId: track.spotifyTrackId }
+          : {}),
         msPlayed: track.msPlayed,
         playCount: 1,
         firstPlayDate: track.endTime,

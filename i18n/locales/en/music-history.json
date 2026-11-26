@@ -163,7 +163,28 @@
           "totalPlayCount": "Total play count"
         }
       },
-      "empty": "No data available"
+      "empty": "No data available",
+      "playlist": {
+        "create": "Create playlist",
+        "open": "Open the playlist on Spotify",
+        "error": "Playlist creation failed. Try again.",
+        "not-configured": "Spotify playlist export is not configured on the server.",
+        "unresolved": "{count} track could not be found on Spotify and was skipped. | {count} tracks could not be found on Spotify and were skipped.",
+        "name": "Top tracks {year}",
+        "name-month": "Top tracks {month} {year}",
+        "name-artists": "Top artists {year}",
+        "name-artists-month": "Top artists {month} {year}",
+        "name-entity": "Top tracks {name} {year}",
+        "name-entity-month": "Top tracks {name} {month} {year}",
+        "dialog-title": "Create the Spotify playlist",
+        "name-label": "Playlist name",
+        "confirm": "Create",
+        "cancel": "Cancel",
+        "login-failed": "The Spotify login failed or expired. Try again.",
+        "loading": "Creating the playlist…",
+        "success": "Playlist created!",
+        "close": "Close"
+      }
     }
   }
 }

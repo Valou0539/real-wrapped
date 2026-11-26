@@ -57,6 +57,7 @@ const trackSearches = () =>
     (init as SearchInit)?.query?.q?.startsWith("track:"),
   );
 const trackItem = (name: string, artists: string[]) => ({
+  id: "t".repeat(22),
   name,
   artists: artists.map((artist) => ({ name: artist })),
 });
@@ -258,9 +259,11 @@ describe("enhance-history job genre enrichment", () => {
 
     expect(job?.status).toBe("completed");
     const rows = job?.result ?? [];
-    // Every play of the resolved pair carries the full credited artist list.
+    // Every play of the resolved pair carries the full credited artist list
+    // and the Spotify track id (the latter feeds playlist creation).
     for (const row of rows.slice(0, 3)) {
       expect(row.artists).toEqual(["Air", "Beth Hirsch"]);
+      expect(row.spotifyTrackId).toBe("t".repeat(22));
     }
     // Non-feat tracks never get the field.
     expect(rows[3]).not.toHaveProperty("artists");

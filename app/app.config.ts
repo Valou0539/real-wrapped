@@ -1,4 +1,4 @@
 export default defineAppConfig({
   title: "Real Wrapped",
-  processVersion: "1.0.0",
+  processVersion: "2.0.0",
 });

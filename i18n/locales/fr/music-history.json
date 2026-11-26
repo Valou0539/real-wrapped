@@ -163,7 +163,28 @@
           "totalPlayCount": "Nombre de lectures"
         }
       },
-      "empty": "Aucune donnée disponible"
+      "empty": "Aucune donnée disponible",
+      "playlist": {
+        "create": "Créer la playlist",
+        "open": "Ouvrir la playlist sur Spotify",
+        "error": "La création de la playlist a échoué. Réessaie.",
+        "not-configured": "L'export de playlist Spotify n'est pas configuré sur le serveur.",
+        "unresolved": "{count} titre introuvable sur Spotify a été ignoré. | {count} titres introuvables sur Spotify ont été ignorés.",
+        "name": "Top titres {year}",
+        "name-month": "Top titres {month} {year}",
+        "name-artists": "Top artistes {year}",
+        "name-artists-month": "Top artistes {month} {year}",
+        "name-entity": "Top titres {name} {year}",
+        "name-entity-month": "Top titres {name} {month} {year}",
+        "dialog-title": "Créer la playlist Spotify",
+        "name-label": "Nom de la playlist",
+        "confirm": "Créer",
+        "cancel": "Annuler",
+        "login-failed": "La connexion à Spotify a échoué ou a expiré. Réessaie.",
+        "loading": "Création de la playlist en cours…",
+        "success": "Playlist créée !",
+        "close": "Fermer"
+      }
     }
   }
 }

@@ -1,7 +1,8 @@
 import type { EnhanceHistoryJob, JobState } from "./types";
 export type { EnhanceHistoryJob };
 import { createGenreLookup } from "./genres.service";
-import { createSpotifyCatalog } from "../spotify/catalog.service";
+import type { createSpotifyCatalog } from "../spotify/catalog.service";
+import { getSharedSpotifyCatalog } from "../spotify/catalog-instance";
 
 const JOB_CLEANUP_DELAY = 60_000 * 60 * 24;
 const ARTIST_WORKERS = 4;
@@ -17,17 +18,10 @@ const MARKET_PATTERN = /^[A-Z]{2}$/;
 // ("Under Pressure") stay undetected.
 const COLLAB_HINT_PATTERN = /\b(?:feat|ft)\.\s|[\(\[]/i;
 
-// Module-level lazy singleton: the catalog's 24h cache is shared across jobs.
-let catalog: ReturnType<typeof createSpotifyCatalog> | undefined;
-const getCatalog = (): ReturnType<typeof createSpotifyCatalog> => {
-  const config = useRuntimeConfig();
-  catalog ??= createSpotifyCatalog({
-    clientId: config.spotifyClientId,
-    clientSecret: config.spotifyClientSecret,
-    market: config.spotifyMarket,
-  });
-  return catalog;
-};
+// Shared process-wide singleton: the catalog's 24h cache is shared across
+// jobs, cover lookups and playlist creation.
+const getCatalog = (): ReturnType<typeof createSpotifyCatalog> =>
+  getSharedSpotifyCatalog();
 
 const isSpotifyConfigured = (): boolean => {
   const config = useRuntimeConfig();
@@ -175,9 +169,14 @@ type WorkItem =
   | { kind: "artist"; artist: string }
   | { kind: "feat"; artistName: string; trackName: string };
 
+interface TrackCredit {
+  id: string;
+  artists: string[];
+}
+
 interface EnrichmentResults {
   genres: Map<string, string[]>;
-  trackArtists: Map<string, Map<string, string[] | undefined>>;
+  trackCredits: Map<string, Map<string, TrackCredit | undefined>>;
 }
 
 /**
@@ -195,7 +194,7 @@ const fetchSpotifyEnrichment = async (
   shouldStop: () => boolean = () => false,
 ): Promise<EnrichmentResults> => {
   const genres = new Map<string, string[]>();
-  const trackArtists = new Map<string, Map<string, string[] | undefined>>();
+  const trackCredits = new Map<string, Map<string, TrackCredit | undefined>>();
 
   const workItems: WorkItem[] = [
     ...artists.map((artist): WorkItem => ({ kind: "artist", artist })),
@@ -216,15 +215,15 @@ const fetchSpotifyEnrichment = async (
     return workItems[index++];
   };
 
-  const recordTrackArtists = (
+  const recordTrackCredit = (
     artistName: string,
     trackName: string,
-    value: string[] | undefined,
+    value: TrackCredit | undefined,
   ): void => {
-    let perArtist = trackArtists.get(artistName);
+    let perArtist = trackCredits.get(artistName);
     if (!perArtist) {
       perArtist = new Map();
-      trackArtists.set(artistName, perArtist);
+      trackCredits.set(artistName, perArtist);
     }
     perArtist.set(trackName, value);
   };
@@ -241,12 +240,12 @@ const fetchSpotifyEnrichment = async (
           // A null result means "no match", not a failure.
           genres.set(item.artist, result?.genres ?? []);
         } else {
-          const result = await getCatalog().findTrackArtists(
+          const result = await getCatalog().findTrack(
             item.artistName,
             item.trackName,
             { patient: true },
           );
-          recordTrackArtists(
+          recordTrackCredit(
             item.artistName,
             item.trackName,
             result ?? undefined,
@@ -257,7 +256,7 @@ const fetchSpotifyEnrichment = async (
         if (item.kind === "artist") {
           genres.set(item.artist, []);
         } else {
-          recordTrackArtists(item.artistName, item.trackName, undefined);
+          recordTrackCredit(item.artistName, item.trackName, undefined);
         }
         consecutiveErrors++;
         if (consecutiveErrors >= MAX_CONSECUTIVE_ERRORS && !stopped) {
@@ -274,7 +273,7 @@ const fetchSpotifyEnrichment = async (
 
   const workerCount = Math.min(ARTIST_WORKERS, workItems.length);
   await Promise.all(Array.from({ length: workerCount }, () => worker()));
-  return { genres, trackArtists };
+  return { genres, trackCredits };
 };
 
 export const startProcessing = async (jobId: string): Promise<void> => {
@@ -338,7 +337,7 @@ export const startProcessing = async (jobId: string): Promise<void> => {
     });
 
     let spotifyGenres = new Map<string, string[]>();
-    let trackArtists = new Map<string, Map<string, string[] | undefined>>();
+    let trackCredits = new Map<string, Map<string, TrackCredit | undefined>>();
     const totalWork = artistsToFetch.length + featPairsToResolve.length;
     if (totalWork > 0 && isSpotifyConfigured()) {
       const enrichment = await fetchSpotifyEnrichment(
@@ -350,20 +349,22 @@ export const startProcessing = async (jobId: string): Promise<void> => {
         () => !!job.cancelled,
       );
       spotifyGenres = enrichment.genres;
-      trackArtists = enrichment.trackArtists;
+      trackCredits = enrichment.trackCredits;
     }
 
     if (job.cancelled) return;
 
     job.result = job.tracks.map((track, index) => {
-      const resolution = trackArtists
+      const resolution = trackCredits
         .get(track.artistName)
         ?.get(track.trackName);
       return {
         ...track,
         genres:
           lookupResults[index] ?? spotifyGenres.get(track.artistName) ?? [],
-        ...(resolution ? { artists: resolution } : {}),
+        ...(resolution
+          ? { artists: resolution.artists, spotifyTrackId: resolution.id }
+          : {}),
       };
     });
     job.progress = 100;

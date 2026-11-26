@@ -26,6 +26,7 @@
           <WrappedTrackCover
             :artist="track.artistName"
             :track="track.trackName"
+            :spotify-track-id="track.spotifyTrackId"
             class="size-[clamp(2.75rem,11vw,3.5rem)]! rounded-lg!"
           />
           <div>

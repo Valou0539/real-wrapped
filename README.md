@@ -64,7 +64,8 @@ NUXT_SPOTIFY_MARKET=FR
 
 #### Spotify (pochettes et fiches artistes)
 
-- Créez une application sur le [Spotify Developer Dashboard](https://developer.spotify.com/dashboard) et renseignez son Client ID / Client Secret. Aucune connexion utilisateur, aucun scope, aucune URL de redirection ni refresh token : le serveur utilise le flux Client Credentials et renouvelle lui-même ses access tokens.
+- Créez une application sur le [Spotify Developer Dashboard](https://developer.spotify.com/dashboard) et renseignez son Client ID / Client Secret. Les pochettes, genres et crédits d'artistes utilisent le flux Client Credentials (aucune connexion utilisateur) et le serveur renouvelle lui-même ses access tokens.
+- **Export de playlist** (bouton « Créer la playlist » sur la vue des titres) : ajoutez l'URL de redirection `http://127.0.0.1:3000/api/spotify/callback` dans les réglages de votre application Spotify (champ *Redirect URIs*) — Spotify exige `127.0.0.1` plutôt que `localhost` en HTTP, ou HTTPS. Si vous servez l'app autrement, ajustez `NUXT_SPOTIFY_REDIRECT_URI` en conséquence et déclarez exactement la même URL dans le dashboard. Au premier clic, Spotify vous demande l'autorisation (scope `playlist-modify-private` uniquement) ; les playlists créées sont privées. Le jeton utilisateur est conservé en mémoire côté serveur : un redémarrage du serveur demande une nouvelle connexion.
 - Sans identifiants, l'application fonctionne normalement, sans pochettes ni genres Spotify sur les fiches artistes.
 - En Development Mode, le propriétaire doit disposer de Spotify Premium, et Spotify applique des limites d'accès et de [quota](https://developer.spotify.com/documentation/web-api/concepts/quota-modes).
 - `NUXT_SPOTIFY_MARKET` (par défaut `FR`) est un code pays ISO 3166-1 alpha-2 configurable.

@@ -44,13 +44,17 @@ const retryAfterMs = (error: unknown): number => {
 const loadCover = async (
   artist: string,
   track: string,
+  spotifyTrackId?: string,
 ): Promise<SpotifyCover | null> => {
   for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
     await acquireSlot();
     try {
       const response = await $fetch<{ cover: SpotifyCover | null }>(
         "/api/spotify/cover",
-        { query: { artist, track }, retry: 0 },
+        {
+          query: { artist, track, ...(spotifyTrackId ? { id: spotifyTrackId } : {}) },
+          retry: 0,
+        },
       );
       return response.cover;
     } catch (error) {
@@ -77,12 +81,15 @@ const pending = new Map<string, Promise<SpotifyCover | null>>();
 export const fetchSpotifyCover = (
   artist: string,
   track: string,
+  spotifyTrackId?: string,
 ): Promise<SpotifyCover | null> => {
-  const key = `${artist}\n${track}`;
+  // When the Spotify id is known it alone keys the deduplication: the lookup
+  // no longer depends on the (lossy) artist+track pair.
+  const key = spotifyTrackId ? `id:${spotifyTrackId}` : `${artist}\n${track}`;
   const existing = pending.get(key);
   if (existing) return existing;
 
-  const request = loadCover(artist, track).finally(() => {
+  const request = loadCover(artist, track, spotifyTrackId).finally(() => {
     pending.delete(key);
   });
   pending.set(key, request);

@@ -1,10 +1,19 @@
 <template>
   <section class="font-wrapped flex flex-col gap-4">
-    <h2
-      class="font-display m-0 text-[30px] uppercase leading-none md:text-[44px]"
-    >
-      {{ $t("music-history.stats.artistsTable.title", { count: top.length }) }}
-    </h2>
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <h2
+        class="font-display m-0 text-[30px] uppercase leading-none md:text-[44px]"
+      >
+        {{
+          $t("music-history.stats.artistsTable.title", { count: top.length })
+        }}
+      </h2>
+      <WrappedStatsPlaylistButton
+        v-if="playlistTracks.length"
+        :tracks="playlistTracks"
+        :name="playlistName"
+      />
+    </div>
 
     <div class="ui-table hidden md:block">
       <div
@@ -81,9 +90,46 @@
 </template>
 
 <script lang="ts" setup>
-import type { TopArtist } from "~/types/wrapped";
+import type { TopArtist, TopTrack } from "~/types/wrapped";
 
-defineProps<{ top: TopArtist[]; monthView?: boolean }>();
+const props = defineProps<{
+  top: TopArtist[];
+  month: number | "all";
+  monthView?: boolean;
+}>();
 
 const { artistLink } = useWrappedEntityLinks();
+const playlistName = usePlaylistName("artists", toRef(props, "month"));
+const { history } = storeToRefs(useMusicHistoryStore());
+
+// The export is one track per artist: their most-played one, in artist
+// ranking order. The global track ranking is scanned once — the first track
+// credited to an artist (primary or featuring) is their most-played.
+const playlistTracks = computed((): TopTrack[] => {
+  const year = history.value;
+  if (!year?.length) return [];
+  const scoped =
+    props.month === "all" ? year : filterHistoryByMonth(year, props.month);
+  const ranked = computeTopTracks(scoped);
+  // Featuring credits mean two artists can share the same top track ("All I
+  // Need" for both Air and Beth Hirsch): deduplicate, first artist wins.
+  const seen = new Set<string>();
+  return props.top
+    .map((artist) =>
+      ranked.find(
+        (track) =>
+          track.artistName === artist.artistName ||
+          !!track.artists?.includes(artist.artistName),
+      ),
+    )
+    .filter((track): track is TopTrack => {
+      if (!track) return false;
+      const key =
+        track.spotifyTrackId ??
+        JSON.stringify([track.artistName, track.trackName]);
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+});
 </script>

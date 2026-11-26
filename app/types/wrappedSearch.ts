@@ -15,6 +15,7 @@ export interface WrappedSearchEntry extends WrappedSearchSelection {
   name: string;
   subtitle?: string;
   artists?: string[];
+  spotifyTrackId?: string;
   rank: number;
   msPlayed: number;
   playCount: number;

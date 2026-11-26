@@ -47,6 +47,7 @@
             :key="entry.key"
             :artist="entry.subtitle"
             :track="entry.name"
+            :spotify-track-id="entry.spotifyTrackId"
             class="w-28 shrink-0 empty:hidden"
           />
           <h1 class="slide-display m-0 text-[clamp(3rem,12vw,7.5rem)]">
@@ -112,11 +113,18 @@
       </div>
 
       <section v-if="type !== 'track'" class="flex flex-col gap-4">
-        <h2
-          class="font-display m-0 text-[30px] uppercase leading-none md:text-[44px]"
-        >
-          {{ $t("music-history.search.topTracks") }}
-        </h2>
+        <div class="flex flex-wrap items-center justify-between gap-3">
+          <h2
+            class="font-display m-0 text-[30px] uppercase leading-none md:text-[44px]"
+          >
+            {{ $t("music-history.search.topTracks") }}
+          </h2>
+          <WrappedStatsPlaylistButton
+            v-if="tracks.length"
+            :tracks="tracks"
+            :name="playlistName"
+          />
+        </div>
         <p v-if="!tracks.length" class="text-wrapped-fg/70 text-sm">
           {{ $t("music-history.search.noTracks") }}
         </p>
@@ -153,6 +161,7 @@
             <WrappedTrackCover
               :artist="track.artistName"
               :track="track.trackName"
+              :spotify-track-id="track.spotifyTrackId"
             />
             <span class="min-w-0">
               <NuxtLinkLocale
@@ -253,6 +262,12 @@ watch([selectedYear, month], loadYearHistory);
 
 const entry = computed(() =>
   findWrappedEntryBySlug(index.value, props.type, props.name, props.artist),
+);
+
+const playlistName = usePlaylistName(
+  "entity",
+  month,
+  computed(() => entry.value?.name),
 );
 
 watchEffect(() => {

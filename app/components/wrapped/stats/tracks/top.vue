@@ -1,10 +1,17 @@
 <template>
   <section class="font-wrapped flex flex-col gap-4">
-    <h2
-      class="font-display m-0 text-[30px] uppercase leading-none md:text-[44px]"
-    >
-      {{ $t("music-history.stats.tracksTable.title", { count: top.length }) }}
-    </h2>
+    <div class="flex flex-wrap items-center justify-between gap-3">
+      <h2
+        class="font-display m-0 text-[30px] uppercase leading-none md:text-[44px]"
+      >
+        {{ $t("music-history.stats.tracksTable.title", { count: top.length }) }}
+      </h2>
+      <WrappedStatsPlaylistButton
+        v-if="top.length"
+        :tracks="top"
+        :name="playlistName"
+      />
+    </div>
 
     <div class="ui-table hidden md:block">
       <div
@@ -46,6 +53,7 @@
         <WrappedTrackCover
           :artist="track.artistName"
           :track="track.trackName"
+          :spotify-track-id="track.spotifyTrackId"
         />
         <span class="ui-lk">{{ track.trackName }}</span>
         <span class="ui-lk">{{ formatTrackArtists(track) }}</span>
@@ -70,6 +78,7 @@
         <WrappedTrackCover
           :artist="track.artistName"
           :track="track.trackName"
+          :spotify-track-id="track.spotifyTrackId"
         />
         <span class="min-w-0">
           <span class="block truncate text-base font-bold">{{
@@ -90,7 +99,8 @@
 <script lang="ts" setup>
 import type { TopTrack } from "~/types/wrapped";
 
-defineProps<{ top: TopTrack[] }>();
+const props = defineProps<{ top: TopTrack[]; month: number | "all" }>();
 
 const { trackLink } = useWrappedEntityLinks();
+const playlistName = usePlaylistName("tracks", toRef(props, "month"));
 </script>

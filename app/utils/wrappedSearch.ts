@@ -42,6 +42,9 @@ export const buildWrappedSearchIndex = (
       name: track.trackName,
       subtitle: track.artistName,
       ...(track.artists?.length ? { artists: track.artists } : {}),
+      ...(track.spotifyTrackId
+        ? { spotifyTrackId: track.spotifyTrackId }
+        : {}),
       rank: track.rank,
       msPlayed: track.msPlayed,
       playCount: track.playCount,

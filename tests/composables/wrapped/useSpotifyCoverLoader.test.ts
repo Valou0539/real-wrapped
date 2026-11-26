@@ -104,6 +104,31 @@ describe("fetchSpotifyCover", () => {
     expect(mockFetch).toHaveBeenCalledTimes(2);
   });
 
+it("passes the Spotify track id to the query and deduplicates by id", async () => {
+    mockFetch.mockResolvedValue({ cover: COVER });
+    const { fetchSpotifyCover } = await importLoader();
+
+    const [first, second] = await Promise.all([
+      fetchSpotifyCover("Artist", "Song", "t".repeat(22)),
+      fetchSpotifyCover("Artist", "Song", "t".repeat(22)),
+    ]);
+
+    expect(first).toEqual(COVER);
+    expect(mockFetch).toHaveBeenCalledTimes(1);
+    const [, init] = mockFetch.mock.calls[0];
+    expect(init.query).toEqual({
+      artist: "Artist",
+      track: "Song",
+      id: "t".repeat(22),
+    });
+
+    // The same artist+track pair without the id is a distinct lookup.
+    await fetchSpotifyCover("Artist", "Song");
+    expect(mockFetch).toHaveBeenCalledTimes(2);
+    const [, plainInit] = mockFetch.mock.calls[1];
+    expect(plainInit.query).toEqual({ artist: "Artist", track: "Song" });
+  });
+
   it("gives up with a null cover after the last attempt", async () => {
     mockFetch.mockRejectedValue(new Error("503"));
     const { fetchSpotifyCover } = await importLoader();

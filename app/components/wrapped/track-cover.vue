@@ -17,7 +17,7 @@
 <script lang="ts" setup>
 import type { SpotifyCover } from "~~/shared/types/spotify";
 
-const props = defineProps<{ artist: string; track: string }>();
+const props = defineProps<{ artist: string; track: string; spotifyTrackId?: string }>();
 
 const root = useTemplateRef("root");
 const cover = shallowRef<SpotifyCover | null>(null);
@@ -26,9 +26,11 @@ let cleanup: (() => void) | undefined;
 
 const load = () => {
   let active = true;
-  fetchSpotifyCover(props.artist, props.track).then((result) => {
-    if (active) cover.value = result;
-  });
+  fetchSpotifyCover(props.artist, props.track, props.spotifyTrackId).then(
+    (result) => {
+      if (active) cover.value = result;
+    },
+  );
   // A null result keeps the striped fallback: the cover is optional metadata.
 
   return () => {

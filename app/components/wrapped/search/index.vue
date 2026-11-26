@@ -137,6 +137,7 @@
                   v-if="entry.type === 'track' && entry.subtitle"
                   :artist="entry.subtitle"
                   :track="entry.name"
+                  :spotify-track-id="entry.spotifyTrackId"
                   class="size-11!"
                 />
                 <span class="flex min-w-0 flex-1 flex-col">

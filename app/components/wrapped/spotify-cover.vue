@@ -28,15 +28,15 @@
 <script lang="ts" setup>
 import type { SpotifyCover } from "~~/shared/types/spotify";
 
-const props = defineProps<{ artist: string; track: string }>();
+const props = defineProps<{ artist: string; track: string; spotifyTrackId?: string }>();
 
 const cover = shallowRef<SpotifyCover | null>(null);
 const unavailable = ref(false);
 
 onMounted(() => {
   watch(
-    () => [props.artist, props.track] as const,
-    async ([artist, track], _, onCleanup) => {
+    () => [props.artist, props.track, props.spotifyTrackId] as const,
+    async ([artist, track, spotifyTrackId], _, onCleanup) => {
       let active = true;
       onCleanup(() => {
         active = false;
@@ -45,7 +45,7 @@ onMounted(() => {
       unavailable.value = false;
       if (!artist.trim() || !track.trim()) return;
 
-      const result = await fetchSpotifyCover(artist, track);
+      const result = await fetchSpotifyCover(artist, track, spotifyTrackId);
       if (!active) return;
       if (result) {
         cover.value = result;

@@ -5,6 +5,7 @@ import type {
 
 const TOKEN_URL = "https://accounts.spotify.com/api/token";
 const SEARCH_URL = "https://api.spotify.com/v1/search";
+const TRACKS_URL = "https://api.spotify.com/v1/tracks";
 const REQUEST_TIMEOUT = 4000;
 const MAX_RETRIES = 2;
 const MAX_INLINE_WAIT = 2000;
@@ -15,6 +16,7 @@ const ALBUM_URL_PATTERN =
   /^https:\/\/open\.spotify\.com\/album\/[A-Za-z0-9]{22}$/;
 const ARTIST_URL_PATTERN =
   /^https:\/\/open\.spotify\.com\/artist\/[A-Za-z0-9]{22}$/;
+const TRACK_ID_PATTERN = /^[A-Za-z0-9]{22}$/;
 const MARKET_PATTERN = /^[A-Z]{2}$/;
 
 export interface SpotifyCatalogOptions {
@@ -45,6 +47,7 @@ interface SpotifyTokenResponse {
 }
 
 interface SpotifyTrack {
+  id?: string;
   name?: string;
   artists?: { name?: string }[];
   album?: {
@@ -200,6 +203,7 @@ export const createSpotifyCatalog = ({
     request: () => Promise<T>,
     isSearch: boolean,
     patient = false,
+    badRequestIsNotFound = false,
   ): Promise<T> => {
     const maxAttempts = patient ? PATIENT_MAX_RETRIES : MAX_RETRIES;
     const maxWait = patient ? PATIENT_MAX_WAIT : MAX_INLINE_WAIT;
@@ -261,7 +265,10 @@ export const createSpotifyCatalog = ({
         if (status === 403) {
           throw new SpotifyCatalogError(502, "Spotify catalog access denied");
         }
-        if (status === 404 && isSearch)
+        // Spotify answers unknown or malformed track ids with a 400 (not a
+        // 404): for direct id lookups that means "gone from the catalog",
+        // which callers treat as a miss and fall back to searching.
+        if ((status === 404 || (status === 400 && badRequestIsNotFound)) && isSearch)
           throw new SpotifyCatalogError(404, "Not found");
         throw new SpotifyCatalogError(502, "Spotify catalog request failed");
       }
@@ -338,19 +345,22 @@ export const createSpotifyCatalog = ({
     return candidates.find((item) => trackKey(item.name!) === looseKey) ?? null;
   };
 
-  const pickCover = (
-    items: (SpotifyTrack | null)[],
-    artistName: string,
-    trackName: string,
-  ): SpotifyCover | null => {
-    const item = pickTrackMatch(items, artistName, trackName);
-    if (!item) return null;
+  const coverFromTrack = (item: SpotifyTrack): SpotifyCover | null => {
     const albumUrl = item.album?.external_urls?.spotify;
     if (!albumUrl || !ALBUM_URL_PATTERN.test(albumUrl)) return null;
     const imageUrl = item.album?.images
       ?.map((image) => publicImageUrl(image?.url))
       .find((url) => !!url);
     return imageUrl ? { imageUrl, albumUrl } : null;
+  };
+
+  const pickCover = (
+    items: (SpotifyTrack | null)[],
+    artistName: string,
+    trackName: string,
+  ): SpotifyCover | null => {
+    const item = pickTrackMatch(items, artistName, trackName);
+    return item ? coverFromTrack(item) : null;
   };
 
   const pickTrackArtists = (
@@ -413,6 +423,58 @@ export const createSpotifyCatalog = ({
     }
   };
 
+  // Direct track lookup by Spotify id: exact by construction, cheaper and
+  // immune to the search-matching pitfalls (renamed titles, punctuation).
+  // Shares the search slot limiter so bulk cover loads never stampede Spotify.
+  const getTrackById = async (trackId: string): Promise<SpotifyTrack | null> => {
+    if (!configured) {
+      throw new SpotifyCatalogError(503, "Spotify catalog is not configured");
+    }
+
+    for (let renewed = false; ;) {
+      const accessToken = await getToken();
+      const releaseSlot = await acquireSearchSlot();
+      try {
+        return await send(
+          () =>
+            $fetch<SpotifyTrack>(`${TRACKS_URL}/${trackId}`, {
+              retry: 0,
+              timeout: REQUEST_TIMEOUT,
+              headers: { Authorization: `Bearer ${accessToken}` },
+              query: { market: countryCode },
+            }),
+          true,
+          false,
+          true,
+        );
+      } catch (error) {
+        if (error instanceof RejectedTokenError) {
+          if (token?.value === accessToken) token = undefined;
+          if (!renewed) {
+            renewed = true;
+            continue;
+          }
+        }
+        if (error instanceof SpotifyCatalogError && error.statusCode === 404) {
+          return null;
+        }
+        throw error;
+      } finally {
+        releaseSlot();
+      }
+    }
+  };
+
+  const findCoverById = async (
+    trackId: string,
+  ): Promise<SpotifyCover | null> => {
+    if (!TRACK_ID_PATTERN.test(trackId)) return null;
+    return cached(`cover-id:${trackId}`, async () => {
+      const track = await getTrackById(trackId);
+      return track ? coverFromTrack(track) : null;
+    });
+  };
+
   const findCover = async (
     artistName: string,
     trackName: string,
@@ -473,16 +535,16 @@ export const createSpotifyCatalog = ({
     });
   };
 
-  const findTrackArtists = async (
+  const resolveTrack = async (
     artistName: string,
     trackName: string,
-    { patient = false }: { patient?: boolean } = {},
-  ): Promise<string[] | null> => {
+    patient: boolean,
+  ): Promise<{ id: string; artists: string[] } | null> => {
     const artistTerm = searchTerm(artistName);
     const trackTerm = searchTerm(trackName);
     if (!artistTerm || !trackTerm) return null;
     return cached(
-      `artists:${normalize(artistName)}|${normalize(trackName)}`,
+      `track:${normalize(artistName)}|${normalize(trackName)}`,
       async () => {
         const response = await searchCatalog(
           `track:"${trackTerm}" artist:"${artistTerm}"`,
@@ -490,14 +552,56 @@ export const createSpotifyCatalog = ({
           10,
           patient,
         );
-        return pickTrackArtists(
+        const item = pickTrackMatch(
           response?.tracks?.items ?? [],
           artistName,
           trackName,
         );
+        if (!item?.id || !TRACK_ID_PATTERN.test(item.id)) return null;
+        const artists = [
+          ...new Set(
+            (item.artists ?? [])
+              .map((artist) => artist?.name?.trim())
+              .filter((name): name is string => !!name),
+          ),
+        ];
+        return artists.length ? { id: item.id, artists } : null;
       },
     );
   };
 
-  return { findCover, findArtistGenres, findTrackArtists };
+  const findTrack = async (
+    artistName: string,
+    trackName: string,
+    { patient = false }: { patient?: boolean } = {},
+  ): Promise<{ id: string; artists: string[] } | null> => {
+    return resolveTrack(artistName, trackName, patient);
+  };
+
+  const findTrackArtists = async (
+    artistName: string,
+    trackName: string,
+    { patient = false }: { patient?: boolean } = {},
+  ): Promise<string[] | null> => {
+    return (
+      (await resolveTrack(artistName, trackName, patient))?.artists ?? null
+    );
+  };
+
+  const findTrackId = async (
+    artistName: string,
+    trackName: string,
+    { patient = false }: { patient?: boolean } = {},
+  ): Promise<string | null> => {
+    return (await resolveTrack(artistName, trackName, patient))?.id ?? null;
+  };
+
+  return {
+    findCover,
+    findCoverById,
+    findArtistGenres,
+    findTrack,
+    findTrackArtists,
+    findTrackId,
+  };
 };

@@ -7,6 +7,7 @@ export interface TopTrack {
   trackName: string;
   artistName: string;
   artists?: string[];
+  spotifyTrackId?: string;
   msPlayed: number;
   playCount: number;
   firstPlayDate: string;

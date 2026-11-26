@@ -16,6 +16,7 @@ const token = (expires_in = 3600, access_token = "tok") => ({
   expires_in,
 });
 const item = (name: string, artist: string, extra = {}) => ({
+  id: "t".repeat(22),
   name,
   artists: [{ name: artist }],
   album: {
@@ -335,6 +336,7 @@ describe("createSpotifyCatalog", () => {
 
   it("returns the full credited artist list for a strict track match", async () => {
     const multiArtist = (name: string, artists: string[]) => ({
+      id: "t".repeat(22),
       name,
       artists: artists.map((artist) => ({ name: artist })),
       album: {
@@ -379,6 +381,7 @@ describe("createSpotifyCatalog", () => {
       // None of the credited artists is the export artist.
       .mockResolvedValueOnce(
         search({
+          id: "t".repeat(22),
           name: "Song",
           artists: [{ name: "Other" }, { name: "Another" }],
         }),
@@ -397,6 +400,7 @@ describe("createSpotifyCatalog", () => {
       isToken(url)
         ? token()
         : search({
+            id: "t".repeat(22),
             name: "Song",
             artists: [{ name: "Artist" }, { name: "Guest" }],
           }),
@@ -473,6 +477,7 @@ describe("createSpotifyCatalog", () => {
   it("matches track titles despite punctuation differences", async () => {
     fetchMock.mockResolvedValueOnce(token()).mockResolvedValueOnce(
       search({
+        id: "t".repeat(22),
         name: "Guns for Hire - from the series Arcane League of Legends",
         artists: [
           { name: "Woodkid" },
@@ -494,6 +499,7 @@ describe("createSpotifyCatalog", () => {
   it("matches feat-tagged export titles against untagged canonical titles", async () => {
     fetchMock.mockResolvedValueOnce(token()).mockResolvedValueOnce(
       search({
+        id: "t".repeat(22),
         name: "Duet",
         artists: [{ name: "Artist" }, { name: "Guest" }],
       }),
@@ -506,11 +512,13 @@ describe("createSpotifyCatalog", () => {
   });
 
   it("does not match a plain export title against a live or acoustic variant", async () => {
-    fetchMock
-      .mockResolvedValueOnce(token())
-      .mockResolvedValueOnce(
-        search({ name: "Song (Acoustic)", artists: [{ name: "Artist" }] }),
-      );
+    fetchMock.mockResolvedValueOnce(token()).mockResolvedValueOnce(
+      search({
+        id: "t".repeat(22),
+        name: "Song (Acoustic)",
+        artists: [{ name: "Artist" }],
+      }),
+    );
     const catalog = createSpotifyCatalog(options);
 
     expect(await catalog.findTrackArtists("Artist", "Song")).toBeNull();
@@ -522,6 +530,7 @@ describe("createSpotifyCatalog", () => {
       .mockRejectedValueOnce(httpError(429, { "retry-after": "20" }))
       .mockResolvedValueOnce(
         search({
+          id: "t".repeat(22),
           name: "Song",
           artists: [{ name: "Artist" }, { name: "Guest" }],
         }),
@@ -545,6 +554,7 @@ describe("createSpotifyCatalog", () => {
       .mockRejectedValueOnce(httpError(504))
       .mockResolvedValueOnce(
         search({
+          id: "t".repeat(22),
           name: "Song",
           artists: [{ name: "Artist" }, { name: "Guest" }],
         }),
@@ -557,6 +567,81 @@ describe("createSpotifyCatalog", () => {
     await vi.advanceTimersByTimeAsync(2_000);
     expect(await promise).toEqual(["Artist", "Guest"]);
     expect(fetchMock).toHaveBeenCalledTimes(4);
+  });
+
+it("fetches the cover directly by Spotify track id without searching", async () => {
+    fetchMock.mockResolvedValueOnce(token()).mockResolvedValueOnce(item("Song", "Artist"));
+
+    const cover = await createSpotifyCatalog(options).findCoverById(
+      "t".repeat(22),
+    );
+
+    expect(cover).toEqual({ imageUrl: IMAGE, albumUrl: ALBUM });
+    const [trackUrl, trackInit] = fetchMock.mock.calls[1];
+    expect(trackUrl).toBe(`https://api.spotify.com/v1/tracks/${"t".repeat(22)}`);
+    expect(trackInit.query).toEqual({ market: "FR" });
+    expect(trackInit.headers.Authorization).toBe("Bearer tok");
+    expect(
+      fetchMock.mock.calls.some(([url]) =>
+        url.includes("api.spotify.com/v1/search"),
+      ),
+    ).toBe(false);
+  });
+
+  it("rejects malformed ids without any upstream call", async () => {
+    const catalog = createSpotifyCatalog(options);
+    expect(await catalog.findCoverById("../evil")).toBeNull();
+    expect(await catalog.findCoverById("")).toBeNull();
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("returns null when the track id no longer exists upstream", async () => {
+    fetchMock
+      .mockResolvedValueOnce(token())
+      .mockRejectedValueOnce(httpError(404));
+    expect(
+      await createSpotifyCatalog(options).findCoverById("t".repeat(22)),
+    ).toBeNull();
+  });
+
+  it("treats Spotify's 400 for unknown ids as a miss, without poisoning searches", async () => {
+    fetchMock
+      .mockResolvedValueOnce(token())
+      .mockRejectedValueOnce(httpError(400))
+      .mockRejectedValueOnce(httpError(400));
+    const catalog = createSpotifyCatalog(options);
+    expect(await catalog.findCoverById("t".repeat(22))).toBeNull();
+    // A 400 on an actual search stays an error: it means a malformed query,
+    // which is a bug rather than a missing track.
+    await expect(catalog.findCover("A", "B")).rejects.toMatchObject({
+      statusCode: 502,
+    });
+  });
+
+  it("caches covers fetched by id and deduplicates concurrent lookups", async () => {
+    fetchMock.mockResolvedValueOnce(token()).mockResolvedValueOnce(item("Song", "Artist"));
+    const catalog = createSpotifyCatalog(options);
+    const [a, b] = await Promise.all([
+      catalog.findCoverById("t".repeat(22)),
+      catalog.findCoverById("t".repeat(22)),
+    ]);
+    expect(a).toEqual(b);
+    await catalog.findCoverById("t".repeat(22));
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("renews the token once on a 401 track lookup", async () => {
+    fetchMock
+      .mockResolvedValueOnce(token())
+      .mockRejectedValueOnce(httpError(401))
+      .mockResolvedValueOnce(token(3600, "tok2"))
+      .mockResolvedValueOnce(item("Song", "Artist"));
+
+    const cover = await createSpotifyCatalog(options).findCoverById(
+      "t".repeat(22),
+    );
+    expect(cover).toEqual({ imageUrl: IMAGE, albumUrl: ALBUM });
+    expect(tokenCalls()).toHaveLength(2);
   });
 
   it("non-patient lookups still fail fast on transient server errors", async () => {

@@ -5,7 +5,7 @@
       :play-count="playCount"
       :artists-count="artistsCount"
     />
-    <WrappedStatsArtistsTop :top="top" />
+    <WrappedStatsArtistsTop :top="top" :month="month" />
   </WrappedStatsDataWrapper>
 </template>
 

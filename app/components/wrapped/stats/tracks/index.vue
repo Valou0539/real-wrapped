@@ -5,7 +5,7 @@
       :play-count="playCount"
       :tracks-count="tracksCount"
     />
-    <WrappedStatsTracksTop :top="top" />
+    <WrappedStatsTracksTop :top="top" :month="month" />
   </WrappedStatsDataWrapper>
 </template>
 

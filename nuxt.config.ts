@@ -76,6 +76,7 @@ export default defineNuxtConfig({
     spotifyClientId: "",
     spotifyClientSecret: "",
     spotifyMarket: "FR",
+    spotifyRedirectUri: "",
     historyGenres: "",
   },
 
