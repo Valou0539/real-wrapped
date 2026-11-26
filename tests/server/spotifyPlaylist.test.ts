@@ -86,28 +86,32 @@ type Browser = ReturnType<typeof createBrowser>;
 const handoffOf = (sessionUrl: string) =>
   new URL(sessionUrl, "http://localhost:3000").searchParams.get("handoff");
 
+const callbackEvent = (browser = createBrowser()) =>
+  browser.event("http://127.0.0.1:3000/api/spotify/callback");
+
 /** Full login round trip for one browser: authorize, callback, handoff. */
 const login = async (
   auth: Auth,
   browser: Browser,
   returnUrl = "http://localhost:3000/",
+  redirectUri = REDIRECT,
 ) => {
   browser.jar.set(auth.LOGIN_BINDING_COOKIE, BINDING);
   const { url, stateCookie } = auth.buildAuthorizeUrl(
     returnUrl,
-    REDIRECT,
+    redirectUri,
     BINDING,
   );
   const state = new URL(url).searchParams.get("state") ?? "";
-  const sessionUrl = await auth.exchangeCode("code-123", state, stateCookie);
+  const callback = browser.event(redirectUri);
+  const next = await auth.exchangeCode(callback, "code-123", state, stateCookie);
+  browser.absorb(callback);
+  const handoff = handoffOf(next);
+  if (!handoff) return { next, back: next };
   const event = browser.event();
-  const back = await auth.redeemSessionHandoff(
-    event,
-    handoffOf(sessionUrl),
-    BINDING,
-  );
+  const back = await auth.redeemSessionHandoff(event, handoff, BINDING);
   browser.absorb(event);
-  return { sessionUrl, back };
+  return { next, back };
 };
 
 const isAuthenticated = (auth: Auth, browser: Browser) =>
@@ -140,7 +144,7 @@ describe("spotify user auth", () => {
 
     const browser = createBrowser();
     expect(await isAuthenticated(auth, browser)).toBe(false);
-    const { sessionUrl, back } = await login(
+    const { next: sessionUrl, back } = await login(
       auth,
       browser,
       "http://localhost:3000/artists/x",
@@ -201,7 +205,7 @@ describe("spotify user auth", () => {
         BINDING,
       );
       const state = new URL(url).searchParams.get("state") ?? "";
-      return handoffOf(await auth.exchangeCode("c", state, stateCookie));
+      return handoffOf(await auth.exchangeCode(callbackEvent(), "c", state, stateCookie));
     };
 
     // Handoff link opened in another browser (no or other binding cookie).
@@ -263,10 +267,10 @@ describe("spotify user auth", () => {
     // Callback opened from another browser (no cookie) or with someone
     // else's state (login CSRF).
     await expect(
-      auth.exchangeCode("code-123", attackerState, undefined),
+      auth.exchangeCode(callbackEvent(), "code-123", attackerState, undefined),
     ).rejects.toMatchObject({ statusCode: 400 });
     await expect(
-      auth.exchangeCode("code-123", attackerState, victim.stateCookie),
+      auth.exchangeCode(callbackEvent(), "code-123", attackerState, victim.stateCookie),
     ).rejects.toMatchObject({ statusCode: 400 });
     // Tampered cookie.
     const [payload, signature] = victim.stateCookie.split(".");
@@ -277,7 +281,7 @@ describe("spotify user auth", () => {
       }),
     ).toString("base64url");
     await expect(
-      auth.exchangeCode("code-123", victimState, `${forged}.${signature}`),
+      auth.exchangeCode(callbackEvent(), "code-123", victimState, `${forged}.${signature}`),
     ).rejects.toMatchObject({ statusCode: 400 });
     expect(fetchMock).not.toHaveBeenCalled();
   });
@@ -297,7 +301,7 @@ describe("spotify user auth", () => {
     }
     const state = new URL(victim.url).searchParams.get("state") ?? "";
     expect(
-      await auth.exchangeCode("code-123", state, victim.stateCookie),
+      await auth.exchangeCode(callbackEvent(), "code-123", state, victim.stateCookie),
     ).toMatch(/^http:\/\/localhost:3000\/api\/spotify\/session\?handoff=/);
   });
 
@@ -313,7 +317,7 @@ describe("spotify user auth", () => {
     vi.setSystemTime(Date.now() + auth.LOGIN_STATE_MAX_AGE * 1000 + 1);
     try {
       await expect(
-        auth.exchangeCode("code-123", state, stateCookie),
+        auth.exchangeCode(callbackEvent(), "code-123", state, stateCookie),
       ).rejects.toMatchObject({ statusCode: 400 });
     } finally {
       vi.useRealTimers();
@@ -355,7 +359,7 @@ describe("spotify user auth", () => {
       BINDING,
     );
     const state = new URL(url).searchParams.get("state") ?? "";
-    await auth.exchangeCode("code-123", state, stateCookie);
+    await auth.exchangeCode(callbackEvent(), "code-123", state, stateCookie);
     const body = fetchMock.mock.calls.find(([u]) => isToken(u))?.[1]?.body;
     expect(body).toContain(`redirect_uri=${encodeURIComponent(dynamic)}`);
   });
@@ -365,13 +369,33 @@ describe("spotify user auth", () => {
       isToken(u) ? userToken() : {},
     );
     const { auth } = await importServices();
-    const { sessionUrl, back } = await login(
-      auth,
-      createBrowser(),
-      "https://evil.example.com/x",
+    const browser = createBrowser();
+    const { next } = await login(auth, browser, "https://evil.example.com/x");
+    expect(next).toBe("/");
+    expect(await isAuthenticated(auth, browser)).toBe(true);
+  });
+
+  it("logs in on the callback origin when the user is not on its loopback twin", async () => {
+    fetchMock.mockImplementation(async (u: string) =>
+      isToken(u) ? userToken() : {},
     );
-    expect(sessionUrl).toMatch(/^\/api\/spotify\/session\?handoff=/);
-    expect(back).toBe("/");
+    const { auth } = await importServices();
+    // Callback overridden to another host: no handoff, the session is set
+    // by the callback itself and the user stays on that origin.
+    const browser = createBrowser();
+    const { next } = await login(
+      auth,
+      browser,
+      "/",
+      "https://wrapped.example.com/api/spotify/callback",
+    );
+    expect(next).toBe("/");
+    expect(await isAuthenticated(auth, browser)).toBe(true);
+    // A private-network return URL never receives a handoff link.
+    const other = createBrowser();
+    const lan = await login(auth, other, "http://192.168.1.5:3000/x");
+    expect(lan.next).toBe("/x");
+    expect(await isAuthenticated(auth, other)).toBe(true);
   });
 
   it("refreshes an expired access token into the browser's session", async () => {

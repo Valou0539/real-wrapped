@@ -57,10 +57,10 @@ export const LOGIN_STATE_COOKIE = "spotify_login_state";
 export const LOGIN_STATE_MAX_AGE = 600;
 
 /**
- * The callback may land on another origin than the one the user browses
- * (127.0.0.1 vs localhost): the tokens then reach the browsing origin through
- * a single-use, short-lived handoff redeemed at SESSION_PATH, which only
- * succeeds with the binding cookie set on that origin when the login started.
+ * In loopback dev the callback lands on 127.0.0.1 while the user may browse
+ * localhost: the tokens then reach the browsing origin through a single-use,
+ * short-lived handoff redeemed at SESSION_PATH, which only succeeds with the
+ * binding cookie set on that origin when the login started.
  */
 export const LOGIN_BINDING_COOKIE = "spotify_login_binding";
 export const SESSION_PATH = "/api/spotify/session";
@@ -319,12 +319,37 @@ const pruneHandoffs = () => {
   }
 };
 
+const isLoopback = (url: URL) =>
+  ["localhost", "127.0.0.1", "[::1]", "::1"].includes(url.hostname);
+
+/**
+ * A handoff URL carries a bearer id: it is only sent to the loopback twin of
+ * a loopback callback (localhost vs 127.0.0.1, same scheme and port — the
+ * same server), never to another host.
+ */
+const isHandoffTarget = (target: URL, callback: URL) =>
+  isLoopback(target) &&
+  isLoopback(callback) &&
+  target.protocol === callback.protocol &&
+  target.port === callback.port;
+
+const saveTokens = async (event: H3Event, tokens: UserTokens) => {
+  const previous = await readTokens(event);
+  await writeTokens(event, {
+    ...tokens,
+    // Spotify may omit refresh_token on re-consent: keep this browser's one.
+    refreshToken: tokens.refreshToken || previous?.refreshToken || "",
+  });
+};
+
 /**
  * Validates the login state against the browser's signed state cookie and
- * exchanges the code. The tokens are parked in a single-use handoff; returns
- * the URL (on the origin the user browses) that redeems it.
+ * exchanges the code. The tokens are stored in this browser's session, or
+ * parked in a single-use handoff when the user browses the loopback twin of
+ * the callback origin. Returns the URL to send the user to.
  */
 export const exchangeCode = async (
+  event: H3Event,
   code: string,
   state: string,
   stateCookie: unknown,
@@ -342,25 +367,30 @@ export const exchangeCode = async (
       redirect_uri: redirectUri,
     }),
   );
+  const tokens: UserTokens = {
+    accessToken: response.access_token,
+    refreshToken: response.refresh_token ?? "",
+    expiresAt: Date.now() + response.expires_in * 1000 - 30_000,
+  };
 
-  pruneHandoffs();
-  const id = randomUUID();
-  handoffs.set(id, {
-    tokens: {
-      accessToken: response.access_token,
-      refreshToken: response.refresh_token ?? "",
-      expiresAt: Date.now() + response.expires_in * 1000 - 30_000,
-    },
-    binding,
-    returnUrl,
-    expiresAt: Date.now() + HANDOFF_TTL,
-  });
+  const callback = new URL(redirectUri);
+  const target = new URL(returnUrl, callback);
+  if (target.origin !== callback.origin && isHandoffTarget(target, callback)) {
+    pruneHandoffs();
+    const id = randomUUID();
+    handoffs.set(id, {
+      tokens,
+      binding,
+      returnUrl,
+      expiresAt: Date.now() + HANDOFF_TTL,
+    });
+    const query = new URLSearchParams({ handoff: id }).toString();
+    return `${target.origin}${SESSION_PATH}?${query}`;
+  }
 
-  const query = `?${new URLSearchParams({ handoff: id }).toString()}`;
-  // Relative return URLs stay on the callback origin.
-  return returnUrl.startsWith("/")
-    ? `${SESSION_PATH}${query}`
-    : `${new URL(returnUrl).origin}${SESSION_PATH}${query}`;
+  // The session cookie lives on the callback origin: stay there.
+  await saveTokens(event, tokens);
+  return `${target.pathname}${target.search}${target.hash}`;
 };
 
 /**
@@ -384,12 +414,7 @@ export const redeemSessionHandoff = async (
   }
   handoffs.delete(handoffId as string);
 
-  const previous = await readTokens(event);
-  await writeTokens(event, {
-    ...handoff.tokens,
-    // Spotify may omit refresh_token on re-consent: keep this browser's one.
-    refreshToken: handoff.tokens.refreshToken || previous?.refreshToken || "",
-  });
+  await saveTokens(event, handoff.tokens);
   return handoff.returnUrl;
 };
 
