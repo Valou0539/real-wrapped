@@ -24,7 +24,7 @@
           >
             <b class="font-display min-w-4 font-normal">{{ index + 1 }}.</b>
             <span class="wrap-anywhere min-w-0"
-              >{{ track.trackName }} - {{ track.artistName }}</span
+              >{{ track.trackName }} - {{ formatTrackArtists(track) }}</span
             >
           </div>
         </ClientOnly>

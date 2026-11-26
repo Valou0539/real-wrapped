@@ -73,7 +73,10 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
-    lastfmApiKey: "",
+    spotifyClientId: "",
+    spotifyClientSecret: "",
+    spotifyMarket: "FR",
+    historyGenres: "",
   },
 
   css: ["~/assets/css/main.css"],

@@ -11,8 +11,8 @@
       <div
         v-if="topTrack"
         :style="style(350)"
-        class="h-(--cover) relative mt-7"
-        style="--cover: clamp(230px, 62vw, 300px)"
+        class="relative mt-7 h-[calc(var(--cover)+2rem)]"
+        style="--cover: clamp(190px, 62vw, 300px)"
       >
         <WrappedSlideshowVinyl
           grooves="#F3EEE3"
@@ -21,20 +21,17 @@
           class="absolute top-0 aspect-square"
           style="left: calc(var(--cover) - 130px); height: var(--cover)"
         />
-        <img
-          v-if="topTrack.cover"
-          :src="topTrack.cover"
-          class="absolute left-0 top-0 aspect-square object-cover shadow-[0_18px_40px_rgba(0,0,0,0.35)]"
-          style="height: var(--cover)"
-          :alt="topTrack.trackName"
-        />
-        <div
-          v-else
-          class="absolute left-0 top-0 flex aspect-square items-center justify-center bg-[repeating-linear-gradient(135deg,#F3EEE3_0_14px,#E4DDCE_14px_28px)] shadow-[0_18px_40px_rgba(0,0,0,0.35)]"
-          style="height: var(--cover)"
+        <WrappedSpotifyCover
+          :artist="topTrack.artistName"
+          :track="topTrack.trackName"
+          class="w-(--cover) absolute left-0 top-0 z-10"
         >
-          <MusicalNoteIcon class="text-wrapped-ink size-16" />
-        </div>
+          <div
+            class="flex aspect-square items-center justify-center bg-[repeating-linear-gradient(135deg,#F3EEE3_0_14px,#E4DDCE_14px_28px)] shadow-[0_18px_40px_rgba(0,0,0,0.35)]"
+          >
+            <MusicalNoteIcon class="text-wrapped-ink size-16" />
+          </div>
+        </WrappedSpotifyCover>
       </div>
 
       <div v-if="topTrack" class="mt-9 flex flex-col gap-2.5">
@@ -48,7 +45,7 @@
           :style="style(750)"
           class="text-[clamp(1.1rem,4.5vw,1.625rem)] font-medium"
         >
-          {{ topTrack.artistName }}
+          {{ formatTrackArtists(topTrack) }}
         </div>
         <div
           :style="style(950)"

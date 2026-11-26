@@ -1,4 +1,4 @@
-import { deleteJob, getJob } from "../services/enhance-history/job.service";
+import { cancelJob, getJob } from "../services/enhance-history/job.service";
 
 export default defineEventHandler((event) => {
   const query = getQuery(event);
@@ -20,15 +20,12 @@ export default defineEventHandler((event) => {
     });
   }
 
-  // Only allow cancellation of pending jobs
-  if (job.status !== "pending") {
+  if (!cancelJob(jobId)) {
     throw createError({
       statusCode: 400,
-      message: "Only pending jobs can be cancelled",
+      message: "Only pending or processing jobs can be cancelled",
     });
   }
-
-  deleteJob(jobId);
 
   return { success: true };
 });

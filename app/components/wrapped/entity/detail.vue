@@ -42,12 +42,12 @@
           }}
         </div>
         <div class="flex flex-wrap items-center gap-x-7 gap-y-5">
-          <img
-            v-if="entry.cover"
-            :src="entry.cover"
-            :alt="entry.name"
-            loading="lazy"
-            class="size-28 shrink-0 rounded-2xl object-cover"
+          <WrappedSpotifyCover
+            v-if="type === 'track' && entry.subtitle"
+            :key="entry.key"
+            :artist="entry.subtitle"
+            :track="entry.name"
+            class="w-28 shrink-0 empty:hidden"
           />
           <h1 class="slide-display m-0 text-[clamp(3rem,12vw,7.5rem)]">
             {{ entry.name }}
@@ -58,13 +58,29 @@
             {{ $t("music-history.search.rank") }} #{{ entry.rank }}
           </span>
         </div>
+        <span
+          v-if="type === 'track' && entry.subtitle && entry.artists?.length"
+          class="w-fit"
+        >
+          <template v-for="(artist, index) in entry.artists" :key="artist">
+            <template v-if="index > 0">{{ ", " }}</template>
+            <NuxtLinkLocale :to="artistLink(artist)" class="ui-lk">
+              {{ artist }}
+            </NuxtLinkLocale>
+          </template>
+        </span>
         <NuxtLinkLocale
-          v-if="type === 'track' && entry.subtitle"
+          v-else-if="type === 'track' && entry.subtitle"
           :to="artistLink(entry.subtitle)"
           class="ui-lk w-fit"
         >
           {{ entry.subtitle }}
         </NuxtLinkLocale>
+        <WrappedSpotifyArtistGenres
+          v-if="type === 'artist'"
+          :key="entry.key"
+          :artist="entry.name"
+        />
       </header>
 
       <div class="grid grid-cols-2 gap-2.5 md:grid-cols-3 md:gap-4">
@@ -108,11 +124,14 @@
           <div
             class="ui-th"
             style="
-              grid-template-columns: 72px 96px minmax(180px, 2fr) 140px 110px;
+              grid-template-columns:
+                72px 96px 48px minmax(180px, 2fr)
+                140px 110px;
             "
           >
             <span>{{ $t("music-history.entity.columns.rank") }}</span>
             <span>{{ $t("music-history.entity.columns.overallRank") }}</span>
+            <span></span>
             <span>{{ $t("music-history.entity.columns.title") }}</span>
             <span>{{ $t("music-history.entity.columns.playTime") }}</span>
             <span>{{ $t("music-history.entity.columns.plays") }}</span>
@@ -122,13 +141,19 @@
             :key="JSON.stringify([track.artistName, track.trackName])"
             class="ui-tr"
             style="
-              grid-template-columns: 72px 96px minmax(180px, 2fr) 140px 110px;
+              grid-template-columns:
+                72px 96px 48px minmax(180px, 2fr)
+                140px 110px;
             "
           >
             <span class="ui-rk ui-rk-top">{{ track.rank }}</span>
             <span class="ui-nu text-wrapped-fg/85"
               >#{{ track.overallRank }}</span
             >
+            <WrappedTrackCover
+              :artist="track.artistName"
+              :track="track.trackName"
+            />
             <span class="min-w-0">
               <NuxtLinkLocale
                 :to="trackLink(track.artistName, track.trackName)"

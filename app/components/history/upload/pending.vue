@@ -147,6 +147,19 @@
         <p class="m-0 text-[22px] font-medium leading-snug">
           {{ $t("music-history.upload.processing") }}
         </p>
+        <button
+          type="button"
+          class="ui-btn h-12! w-fit px-6 text-base font-bold"
+          :disabled="cancelling"
+          @click="handleCancel"
+        >
+          <i
+            v-if="cancelling"
+            class="pi pi-spinner pi-spin"
+            aria-hidden="true"
+          />
+          {{ $t("music-history.upload.cancel") }}
+        </button>
         <div class="mt-auto flex flex-col gap-2.5">
           <div class="flex justify-between text-[15px] font-bold">
             <span>{{ $t("music-history.upload.progress") }}</span>

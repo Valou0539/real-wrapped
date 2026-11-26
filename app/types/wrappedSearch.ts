@@ -14,11 +14,11 @@ export interface WrappedSearchSelection {
 export interface WrappedSearchEntry extends WrappedSearchSelection {
   name: string;
   subtitle?: string;
+  artists?: string[];
   rank: number;
   msPlayed: number;
   playCount: number;
   firstPlayDate?: string;
-  cover?: string;
 }
 
 export interface WrappedSearchIndex {

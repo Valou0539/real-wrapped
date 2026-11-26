@@ -41,7 +41,7 @@
         <span :class="['ui-rk', { 'ui-rk-top': index < 3 }]">{{
           index + 1
         }}</span>
-        <span class="ui-lk">{{ genre.genreName }}</span>
+        <span class="ui-lk first-letter:uppercase">{{ genre.genreName }}</span>
         <span class="ui-tx">{{ genre.mostPlayedArtist }}</span>
         <span class="ui-nu">{{ formatDuration(genre.msPlayed) }}</span>
         <span class="ui-nu">{{ genre.playCount }}</span>
@@ -59,9 +59,10 @@
           index + 1
         }}</span>
         <span class="min-w-0">
-          <span class="block truncate text-base font-bold">{{
-            genre.genreName
-          }}</span>
+          <span
+            class="block truncate text-base font-bold first-letter:uppercase"
+            >{{ genre.genreName }}</span
+          >
           <span class="text-wrapped-fg/80 block truncate text-sm">{{
             genre.mostPlayedArtist
           }}</span>

@@ -1,12 +1,15 @@
 <template>
-  <WrappedStatsDataWrapper :top="top">
+  <template v-if="top.length">
     <WrappedStatsGenresGlobal
       :play-time="playTime"
       :play-count="playCount"
       :genres-count="genresCount"
     />
     <WrappedStatsGenresTop :top="top" />
-  </WrappedStatsDataWrapper>
+  </template>
+  <p v-else class="w-full py-16 text-center">
+    {{ $t("music-history.stats.genres-unavailable") }}
+  </p>
 </template>
 
 <script lang="ts" setup>

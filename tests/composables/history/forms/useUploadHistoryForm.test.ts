@@ -18,6 +18,10 @@ const mockRequire = vi.hoisted(() => vi.fn());
 mockNuxtImport("useEnhanceHistoryRequest", () => () => ({
   execute: mockExecute,
 }));
+const mockCancelExecute = vi.hoisted(() => vi.fn());
+mockNuxtImport("useCancelJobRequest", () => () => ({
+  execute: mockCancelExecute,
+}));
 mockNuxtImport("useConfirm", () => () => ({ require: mockRequire }));
 mockNuxtImport("useI18n", () => () => ({ t: (key: string) => key }));
 const mockNavigateTo = vi.hoisted(() => vi.fn());
@@ -54,6 +58,7 @@ describe("useUploadHistoryForm", () => {
     vi.mocked(indexedDbStorage.getItem).mockResolvedValue(null);
     vi.mocked(indexedDbStorage.setItem).mockResolvedValue(undefined);
     mockExecute.mockResolvedValue({ jobId: "job-1" });
+    mockCancelExecute.mockResolvedValue({ success: true });
   });
 
   it("sends only the tracks of the chosen year and sets the job year before the job id", async () => {
@@ -126,6 +131,36 @@ describe("useUploadHistoryForm", () => {
 
     expect(mockExecute).toHaveBeenCalledWith([track2025]);
     expect(store.jobs["job-1"]).toBe(2025);
+  });
+
+  it("supersedes existing jobs of the same year and keeps the other years", async () => {
+    const store = useMusicHistoryStore();
+    store.jobs["stuck-job"] = 2025;
+    store.jobs["running-job"] = 2025;
+    store.jobs["other-year-job"] = 2024;
+
+    const { submit } = useUploadHistoryForm();
+    await submitWith(submit, 2025, createFileList([track2025]));
+
+    // Previous jobs for 2025 are forgotten client-side and cancelled
+    // server-side (best effort); the other year is untouched.
+    expect(store.jobs).toEqual({ "other-year-job": 2024, "job-1": 2025 });
+    expect(mockCancelExecute).toHaveBeenCalledWith("stuck-job");
+    expect(mockCancelExecute).toHaveBeenCalledWith("running-job");
+    expect(mockCancelExecute).not.toHaveBeenCalledWith("other-year-job");
+    expect(mockCancelExecute).not.toHaveBeenCalledWith("job-1");
+  });
+
+  it("still tracks the new job when cancelling an old one fails", async () => {
+    const store = useMusicHistoryStore();
+    store.jobs["stuck-job"] = 2025;
+    mockCancelExecute.mockRejectedValue(new Error("network"));
+
+    const { submit } = useUploadHistoryForm();
+    await submitWith(submit, 2025, createFileList([track2025]));
+
+    expect(store.jobs).toEqual({ "job-1": 2025 });
+    expect(mockNavigateTo).toHaveBeenCalledWith("/");
   });
 
   it("ignores a second submit while the first request is running", async () => {

@@ -109,6 +109,103 @@ describe("wrapped search", () => {
     ]);
   });
 
+  it("ranks and details artists credited only through feat resolutions", () => {
+    const featHistory = [
+      {
+        ...track("Air", "All I Need (feat. Beth Hirsch)", 60000),
+        artists: ["Air", "Beth Hirsch"],
+      },
+      track("Air", "Cherry Blossom Girl", 40000),
+    ];
+    const index = buildWrappedSearchIndex(featHistory);
+
+    // Beth Hirsch appears in the artist rankings although no row names her
+    // as the export (primary) artist.
+    expect(
+      index.artists.map((item) => [item.artistName, item.msPlayed]),
+    ).toEqual([
+      ["Air", 100000],
+      ["Beth Hirsch", 60000],
+    ]);
+    // She is searchable and resolvable as an artist entry.
+    expect(
+      findWrappedSearchEntry(index, {
+        type: "artist",
+        key: "Beth Hirsch",
+      }),
+    ).toMatchObject({ name: "Beth Hirsch", msPlayed: 60000, playCount: 1 });
+
+    // Her detail page lists the feat tracks she is credited on — and only
+    // those, not the primary artist's solo plays.
+    const tracks = getWrappedEntryTracks(index, {
+      type: "artist",
+      key: "Beth Hirsch",
+    });
+    expect(tracks.map((item) => [item.trackName, item.msPlayed])).toEqual([
+      ["All I Need (feat. Beth Hirsch)", 60000],
+    ]);
+
+    // The primary artist's detail page is unchanged and covers both plays.
+    expect(
+      getWrappedEntryTracks(index, { type: "artist", key: "Air" }).map(
+        (item) => item.trackName,
+      ),
+    ).toEqual(["All I Need (feat. Beth Hirsch)", "Cherry Blossom Girl"]);
+  });
+
+  it("carries credited artists on track entries only when present", () => {
+    const index = buildWrappedSearchIndex([
+      {
+        ...track("Air", "All I Need (feat. Beth Hirsch)", 60000),
+        artists: ["Air", "Beth Hirsch"],
+      },
+      track("Air", "Cherry Blossom Girl", 40000),
+    ]);
+
+    // The display list rides along the entry, but the subtitle stays the
+    // primary artist for routing and cover lookups.
+    expect(
+      findWrappedSearchEntry(index, {
+        type: "track",
+        key: JSON.stringify(["Air", "All I Need (feat. Beth Hirsch)"]),
+      }),
+    ).toMatchObject({
+      subtitle: "Air",
+      artists: ["Air", "Beth Hirsch"],
+    });
+
+    const solo = findWrappedSearchEntry(index, {
+      type: "track",
+      key: JSON.stringify(["Air", "Cherry Blossom Girl"]),
+    });
+    expect(solo).toMatchObject({ subtitle: "Air" });
+    expect(solo).not.toHaveProperty("artists");
+  });
+
+  it("resolves feat tracks by their primary artist slug, not the joined list", () => {
+    const index = buildWrappedSearchIndex([
+      {
+        ...track("Air", "All I Need (feat. Beth Hirsch)", 60000),
+        artists: ["Air", "Beth Hirsch"],
+      },
+    ]);
+    const slug = "all-i-need-feat-beth-hirsch";
+
+    // Track URLs are generated from the primary artist, so the entry must be
+    // found by that slug — regression guard against routing on the joined
+    // display list instead.
+    expect(findWrappedEntryBySlug(index, "track", slug, "air")).toMatchObject({
+      subtitle: "Air",
+      artists: ["Air", "Beth Hirsch"],
+    });
+    expect(
+      findWrappedEntryBySlug(index, "track", slug, "air-beth-hirsch"),
+    ).toBeUndefined();
+    expect(
+      findWrappedEntryBySlug(index, "track", slug, "beth-hirsch"),
+    ).toBeUndefined();
+  });
+
   it("counts only plays tagged with the selected genre", () => {
     const index = buildWrappedSearchIndex([
       track("Artist", "Shared song", 90000, ["Rock"]),

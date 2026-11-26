@@ -6,10 +6,10 @@ export interface TopDate {
 export interface TopTrack {
   trackName: string;
   artistName: string;
+  artists?: string[];
   msPlayed: number;
   playCount: number;
   firstPlayDate: string;
-  cover: string;
 }
 
 export interface TopArtist {

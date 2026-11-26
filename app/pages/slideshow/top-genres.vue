@@ -11,30 +11,37 @@
       class="mt-[clamp(1.5rem,5vh,3rem)] flex flex-col gap-[clamp(1rem,3vh,1.625rem)]"
     >
       <ClientOnly>
-        <div
-          v-for="(genre, index) in top5Genres"
-          :key="genre.genreName"
-          class="flex flex-col gap-2.5"
-        >
+        <p v-if="!top5Genres.length" :style="style(300)" class="slide-sub">
+          {{ $t("music-history.stats.genres-unavailable") }}
+        </p>
+        <template v-else>
           <div
-            :style="style(300 + index * 150)"
-            class="slide-display flex items-baseline gap-3.5 text-[clamp(1.7rem,7.5vw,2.5rem)]"
+            v-for="(genre, index) in top5Genres"
+            :key="genre.genreName"
+            class="flex flex-col gap-2.5"
           >
-            <i
-              class="min-w-[1.625rem] text-[clamp(1rem,4.5vw,1.375rem)] not-italic opacity-85"
-              >{{ index + 1 }}</i
+            <div
+              :style="style(300 + index * 150)"
+              class="slide-display flex items-baseline gap-3.5 text-[clamp(1.7rem,7.5vw,2.5rem)]"
             >
-            <span class="wrap-anywhere capitalize">{{ genre.genreName }}</span>
+              <i
+                class="min-w-[1.625rem] text-[clamp(1rem,4.5vw,1.375rem)] not-italic opacity-85"
+                >{{ index + 1 }}</i
+              >
+              <span class="wrap-anywhere capitalize">{{
+                genre.genreName
+              }}</span>
+            </div>
+            <div
+              :style="[
+                style(400 + index * 150, { transform: 'scaleX(0)' }),
+                { width: `${barWidth(genre.msPlayed)}%` },
+              ]"
+              class="h-3.5 origin-left rounded-full"
+              :class="index === 0 ? 'bg-wrapped-lime' : 'bg-wrapped-cream'"
+            />
           </div>
-          <div
-            :style="[
-              style(400 + index * 150, { transform: 'scaleX(0)' }),
-              { width: `${barWidth(genre.msPlayed)}%` },
-            ]"
-            class="h-3.5 origin-left rounded-full"
-            :class="index === 0 ? 'bg-wrapped-lime' : 'bg-wrapped-cream'"
-          />
-        </div>
+        </template>
       </ClientOnly>
     </div>
 

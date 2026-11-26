@@ -97,7 +97,7 @@
               :class="[
                 'ui-chip h-10! text-[15px]! font-bold!',
                 {
-                  'ui-chip-on border-wrapped-fg! bg-wrapped-fg':
+                  'ui-chip-on border-wrapped-fg! bg-wrapped-fg text-wrapped-bg':
                     activeTab === tab.value,
                 },
               ]"
@@ -109,7 +109,7 @@
 
           <div class="gap-4.5 flex max-h-[50vh] flex-col overflow-y-auto">
             <p
-              v-if="hasVisibleResults(activeTab)!"
+              v-if="!hasVisibleResults(activeTab)"
               class="text-wrapped-fg/70 text-sm"
             >
               {{ $t("music-history.search.empty") }}
@@ -133,12 +133,27 @@
                 class="text-wrapped-fg hover:bg-wrapped-hover flex min-h-14 items-center gap-3.5 rounded-[14px] px-3 py-1.5 no-underline"
                 @click="isSearchOpen = false"
               >
+                <WrappedTrackCover
+                  v-if="entry.type === 'track' && entry.subtitle"
+                  :artist="entry.subtitle"
+                  :track="entry.name"
+                  class="size-11!"
+                />
                 <span class="flex min-w-0 flex-1 flex-col">
-                  <b class="truncate text-[17px]">{{ entry.name }}</b>
+                  <b
+                    class="truncate text-[17px]"
+                    :class="{ capitalize: group.type === 'genre' }"
+                    >{{ entry.name }}</b
+                  >
                   <small
                     v-if="entry.subtitle"
                     class="text-wrapped-fg/80 truncate text-sm"
-                    >{{ entry.subtitle }}</small
+                    >{{
+                      formatTrackArtists({
+                        artistName: entry.subtitle ?? "",
+                        artists: entry.artists,
+                      })
+                    }}</small
                   >
                 </span>
                 <span class="font-display text-wrapped-orange text-xl"

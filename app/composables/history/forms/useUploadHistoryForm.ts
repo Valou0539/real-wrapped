@@ -77,6 +77,20 @@ export const useUploadHistoryForm =
 
         const data = await useEnhanceHistoryRequest().execute(tracks);
 
+        // A year only ever has one tracked job: supersede any previous one —
+        // stuck errored entries would otherwise shadow the new job in the UI,
+        // and a still-running import for the same year must not complete later
+        // on top of the fresher data.
+        for (const [oldJobId, oldYear] of Object.entries(
+          musicHistoryStore.jobs,
+        )) {
+          if (oldYear !== year) continue;
+          delete musicHistoryStore.jobs[oldJobId];
+          useCancelJobRequest()
+            .execute(oldJobId)
+            .catch(() => {});
+        }
+
         musicHistoryStore.importError = undefined;
         musicHistoryStore.jobs[data.jobId] = year;
         musicHistoryStore.isImporting = false;

@@ -16,13 +16,18 @@
           v-for="(track, index) in top5Tracks"
           :key="track.trackName + track.artistName"
           :style="style(350 + index * 150)"
-          class="border-wrapped-cream/25 grid grid-cols-[clamp(3rem,15vw,5.25rem)_minmax(0,1fr)] items-center gap-3 border-t py-[clamp(0.7rem,2vh,1.125rem)]"
+          class="border-wrapped-cream/25 grid grid-cols-[clamp(3rem,15vw,5.25rem)_auto_minmax(0,1fr)] items-center gap-3 border-t py-[clamp(0.7rem,2vh,1.125rem)]"
         >
           <div
             class="slide-display text-wrapped-orange text-[clamp(3rem,14vw,4.75rem)] leading-none"
           >
             {{ index + 1 }}
           </div>
+          <WrappedTrackCover
+            :artist="track.artistName"
+            :track="track.trackName"
+            class="size-[clamp(2.75rem,11vw,3.5rem)]! rounded-lg!"
+          />
           <div>
             <div
               class="wrap-anywhere text-[clamp(1.1rem,4.5vw,1.5rem)] font-bold leading-tight"
@@ -32,7 +37,7 @@
             <div
               class="mt-1 text-[clamp(0.85rem,3.5vw,1.0625rem)] font-medium opacity-85"
             >
-              {{ track.artistName }}
+              {{ formatTrackArtists(track) }}
             </div>
           </div>
         </div>

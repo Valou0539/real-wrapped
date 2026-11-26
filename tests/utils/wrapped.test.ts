@@ -133,6 +133,97 @@ describe("wrapped utils", () => {
       // Artist B has Track B1 (50k) and Track B2 (150k)
       expect(artistB?.mostPlayedTrack).toBe("Track B2");
     });
+
+    it("credits every resolved artist of a feat play with the full listening time", () => {
+      const featHistory = [
+        createTrack({
+          endTime: "2023-01-01T10:00:00Z",
+          msPlayed: 60000,
+          artistName: "Air",
+          trackName: "All I Need (feat. Beth Hirsch)",
+          artists: ["Air", "Beth Hirsch"],
+        }),
+        createTrack({
+          endTime: "2023-01-02T10:00:00Z",
+          msPlayed: 40000,
+          artistName: "Air",
+          trackName: "Cherry Blossom Girl",
+        }),
+        createTrack({
+          endTime: "2023-01-03T10:00:00Z",
+          msPlayed: 10000,
+          artistName: "Beth Hirsch",
+          trackName: "Alone Again",
+        }),
+      ];
+
+      const result = computeTopArtists(featHistory);
+
+      // No extra artist is invented beyond the credited ones.
+      expect(result).toHaveLength(2);
+
+      const air = result.find((a) => a.artistName === "Air");
+      // 60k (feat) + 40k (solo): unchanged for the primary artist.
+      expect(air?.msPlayed).toBe(100000);
+      expect(air?.playCount).toBe(2);
+      expect(air?.mostPlayedTrack).toBe("All I Need (feat. Beth Hirsch)");
+      expect(air?.firstPlayDate).toBe("2023-01-01T10:00:00Z");
+
+      const beth = result.find((a) => a.artistName === "Beth Hirsch");
+      // The feat play counts in full for the featuring artist too: no split.
+      expect(beth?.msPlayed).toBe(70000);
+      expect(beth?.playCount).toBe(2);
+      // Her most played track only accumulates over plays where she is
+      // credited: the feat track (60k) beats her own solo track (10k).
+      expect(beth?.mostPlayedTrack).toBe("All I Need (feat. Beth Hirsch)");
+      // First play date includes the earlier feat play, not just her own.
+      expect(beth?.firstPlayDate).toBe("2023-01-01T10:00:00Z");
+    });
+
+    it("does not credit primary-only plays to featuring artists", () => {
+      const result = computeTopArtists([
+        createTrack({
+          msPlayed: 50000,
+          artistName: "Air",
+          trackName: "Cherry Blossom Girl",
+        }),
+      ]);
+
+      expect(result).toHaveLength(1);
+      expect(result[0]?.artistName).toBe("Air");
+      expect(result[0]?.msPlayed).toBe(50000);
+      expect(result[0]?.playCount).toBe(1);
+    });
+
+    it("ignores an empty resolved artist list and falls back to the export artist", () => {
+      const result = computeTopArtists([
+        createTrack({
+          msPlayed: 30000,
+          artistName: "Air",
+          trackName: "Untagged",
+          artists: [],
+        }),
+      ]);
+
+      expect(result).toHaveLength(1);
+      expect(result[0]?.artistName).toBe("Air");
+      expect(result[0]?.msPlayed).toBe(30000);
+    });
+
+    it("counts a duplicated artist in the credited list only once per play", () => {
+      const result = computeTopArtists([
+        createTrack({
+          msPlayed: 30000,
+          artistName: "Air",
+          trackName: "Duet",
+          artists: ["Air", "Air", "Guest"],
+        }),
+      ]);
+
+      expect(result.find((a) => a.artistName === "Air")?.playCount).toBe(1);
+      expect(result.find((a) => a.artistName === "Air")?.msPlayed).toBe(30000);
+      expect(result.find((a) => a.artistName === "Guest")?.playCount).toBe(1);
+    });
   });
 
   describe("computeTopTracks", () => {
@@ -145,6 +236,38 @@ describe("wrapped utils", () => {
       expect(result[0].msPlayed).toBe(150000);
       expect(result[1].trackName).toBe("Track A1");
       expect(result[1].msPlayed).toBe(100000);
+    });
+
+    it("carries the credited artists list into the aggregated track", () => {
+      const result = computeTopTracks([
+        createTrack({
+          endTime: "2023-01-01T10:00:00Z",
+          msPlayed: 60000,
+          artistName: "Air",
+          trackName: "All I Need (feat. Beth Hirsch)",
+          artists: ["Air", "Beth Hirsch"],
+        }),
+        createTrack({
+          endTime: "2023-01-02T10:00:00Z",
+          msPlayed: 40000,
+          artistName: "Air",
+          trackName: "All I Need (feat. Beth Hirsch)",
+          artists: ["Air", "Beth Hirsch"],
+        }),
+      ]);
+
+      expect(result).toHaveLength(1);
+      expect(result[0]?.artists).toEqual(["Air", "Beth Hirsch"]);
+      expect(result[0]?.msPlayed).toBe(100000);
+      expect(result[0]?.playCount).toBe(2);
+    });
+
+    it("leaves artists undefined for tracks without resolved credits", () => {
+      const result = computeTopTracks(history);
+
+      result.forEach((track) => {
+        expect(track.artists).toBeUndefined();
+      });
     });
   });
 

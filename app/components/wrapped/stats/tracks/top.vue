@@ -11,13 +11,14 @@
         class="ui-th"
         style="
           grid-template-columns:
-            56px minmax(160px, 2fr) minmax(140px, 1.4fr)
+            56px 48px minmax(160px, 2fr) minmax(140px, 1.4fr)
             130px 100px 140px;
         "
       >
         <span>{{
           $t("music-history.stats.tracksTable.columns.position")
         }}</span>
+        <span></span>
         <span>{{ $t("music-history.stats.tracksTable.columns.title") }}</span>
         <span>{{ $t("music-history.stats.tracksTable.columns.artist") }}</span>
         <span>{{
@@ -35,15 +36,19 @@
         class="ui-tr"
         style="
           grid-template-columns:
-            56px minmax(160px, 2fr) minmax(140px, 1.4fr)
+            56px 48px minmax(160px, 2fr) minmax(140px, 1.4fr)
             130px 100px 140px;
         "
       >
         <span :class="['ui-rk', { 'ui-rk-top': index < 3 }]">{{
           index + 1
         }}</span>
+        <WrappedTrackCover
+          :artist="track.artistName"
+          :track="track.trackName"
+        />
         <span class="ui-lk">{{ track.trackName }}</span>
-        <span class="ui-lk">{{ track.artistName }}</span>
+        <span class="ui-lk">{{ formatTrackArtists(track) }}</span>
         <span class="ui-nu">{{ formatDuration(track.msPlayed) }}</span>
         <span class="ui-nu">{{ track.playCount }}</span>
         <span class="ui-nu">{{
@@ -57,17 +62,21 @@
         v-for="(track, index) in top"
         :key="JSON.stringify([track.artistName, track.trackName])"
         :to="trackLink(track.artistName, track.trackName)"
-        class="min-h-15 border-wrapped-fg/10 text-wrapped-fg grid grid-cols-[36px_minmax(0,1fr)_auto] items-center gap-3 border-b px-4 py-1.5 no-underline"
+        class="min-h-15 border-wrapped-fg/10 text-wrapped-fg grid grid-cols-[36px_48px_minmax(0,1fr)_auto] items-center gap-3 border-b px-4 py-1.5 no-underline"
       >
         <span :class="['ui-rk text-[22px]', { 'ui-rk-top': index < 3 }]">{{
           index + 1
         }}</span>
+        <WrappedTrackCover
+          :artist="track.artistName"
+          :track="track.trackName"
+        />
         <span class="min-w-0">
           <span class="block truncate text-base font-bold">{{
             track.trackName
           }}</span>
           <span class="text-wrapped-fg/80 block truncate text-sm">{{
-            track.artistName
+            formatTrackArtists(track)
           }}</span>
         </span>
         <span class="text-wrapped-fg/80 text-sm">{{

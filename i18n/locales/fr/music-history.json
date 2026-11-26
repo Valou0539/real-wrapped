@@ -2,8 +2,8 @@
   "music-history": {
     "upload": {
       "app": {
-        "title": "Votre Vrai {spotify} Wrapped",
-        "description": "Le Wrapped de Spotify c'est bien, mais ce n'est pas toujours précis. Il manque du temps d'écoute et s'arrête tôt dans l'année. En utilisant les vraies données d'historique de votre compte, nous générons des statistiques 100% précises de votre année musicale."
+        "title": "Votre année {spotify} en musique",
+        "description": "Importez votre historique pour retrouver vos titres, artistes et temps d’écoute par année. Ce récapitulatif est indépendant de Spotify."
       },
       "title": "Déposez vos fichiers d'historique",
       "hint": "Formats acceptés : JSON uniquement — accepte les fichiers StreamingHistory_music_*.json de Spotify",
@@ -13,7 +13,7 @@
         "spotify-privacy-link": "les paramètres de confidentialité de votre compte Spotify"
       },
       "button": "Téléverser",
-      "processing": "Récupération des genres et images en cours... Vous pouvez revenir plus tard.",
+      "processing": "Import de votre historique et récupération des genres en cours... Vous pouvez revenir plus tard.",
       "queue": "Votre traitement est en attente, il reste {count} personne devant vous | Votre traitement est en attente, il reste {count} personnes devant vous",
       "cancel": "Annuler",
       "retry": "Réessayer",
@@ -99,7 +99,13 @@
       "overallRank": "Global #{rank}",
       "short": "Rechercher"
     },
+    "spotify": {
+      "open-album": "Ouvrir l’album dans Spotify",
+      "open-artist": "Ouvrir l’artiste dans Spotify",
+      "artist-genres": "Genres sur Spotify"
+    },
     "stats": {
+      "genres-unavailable": "Aucun genre renseigné pour cette période.",
       "all": "Tout",
       "tracks": "Titres",
       "artists": "Artistes",

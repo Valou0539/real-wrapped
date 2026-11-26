@@ -168,6 +168,41 @@ describe("useEnhanceHistoryProgress", () => {
     wrapper.unmount();
   });
 
+  it("forgets the job entirely when the server no longer knows it", async () => {
+    const store = useMusicHistoryStore();
+    store.jobs = { "job-1": 2025 };
+    const notFound = Object.assign(new Error("not found"), {
+      response: { status: 404 },
+    });
+    mockFetch.mockRejectedValueOnce(notFound);
+
+    const wrapper = mountTracker("job-1");
+    wrapper.vm.startTracking();
+    await flush();
+
+    // The entry is dropped: keeping it would shadow any future import of
+    // the same year, and the job can never come back.
+    expect(store.jobs).toEqual({});
+    expect(wrapper.vm.error).toBe("music-history.upload.errors.fetch-job");
+
+    wrapper.unmount();
+  });
+
+  it("keeps the job on transient polling failures", async () => {
+    const store = useMusicHistoryStore();
+    store.jobs = { "job-1": 2025 };
+    mockFetch.mockRejectedValueOnce(new Error("network"));
+
+    const wrapper = mountTracker("job-1");
+    wrapper.vm.startTracking();
+    await flush();
+
+    expect(store.jobs["job-1"]).toBe(2025);
+    expect(wrapper.vm.error).toBe("music-history.upload.errors.fetch-job");
+
+    wrapper.unmount();
+  });
+
   it("requests the job state only once while a request is pending", async () => {
     const store = useMusicHistoryStore();
     store.jobs = { "job-1": 2025 };

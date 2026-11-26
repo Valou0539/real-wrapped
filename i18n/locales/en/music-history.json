@@ -2,8 +2,8 @@
   "music-history": {
     "upload": {
       "app": {
-        "title": "Your Real {spotify} Wrapped",
-        "description": "Spotify's Wrapped is great, but it's not always accurate. It misses some listening time and cuts off early in the year. By using your actual account history data, we generate 100% accurate statistics of your year in music."
+        "title": "Your year in music on {spotify}",
+        "description": "Import your history to explore your tracks, artists and listening time by year. This recap is independent of Spotify."
       },
       "title": "Drop your history files",
       "hint": "Accepted formats: JSON only — accepts Spotify StreamingHistory_music_*.json files",
@@ -13,7 +13,7 @@
         "spotify-privacy-link": "Spotify account privacy settings"
       },
       "button": "Upload",
-      "processing": "Retrieving genres and images... You can come back later.",
+      "processing": "Importing your history and retrieving genres... You can come back later.",
       "queue": "Your request is queued, {count} person ahead of you | Your request is queued, {count} people ahead of you",
       "cancel": "Cancel",
       "retry": "Retry",
@@ -99,7 +99,13 @@
       "overallRank": "Overall #{rank}",
       "short": "Search"
     },
+    "spotify": {
+      "open-album": "Open album on Spotify",
+      "open-artist": "Open artist on Spotify",
+      "artist-genres": "Genres on Spotify"
+    },
     "stats": {
+      "genres-unavailable": "No genre information for this period.",
       "all": "All",
       "tracks": "Tracks",
       "artists": "Artists",

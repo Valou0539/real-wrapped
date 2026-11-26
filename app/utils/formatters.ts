@@ -9,6 +9,12 @@ export const formatDuration = (ms: number): string => {
   return `${minutes}m`;
 };
 
+export const formatTrackArtists = (track: {
+  artistName: string;
+  artists?: string[];
+}): string =>
+  track.artists?.length ? track.artists.join(", ") : track.artistName;
+
 export const formatDate = (
   dateString: string,
   locale: Intl.LocalesArgument = "en-US",

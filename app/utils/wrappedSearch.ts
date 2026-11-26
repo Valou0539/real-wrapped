@@ -41,11 +41,11 @@ export const buildWrappedSearchIndex = (
       key: trackKey(track.artistName, track.trackName),
       name: track.trackName,
       subtitle: track.artistName,
+      ...(track.artists?.length ? { artists: track.artists } : {}),
       rank: track.rank,
       msPlayed: track.msPlayed,
       playCount: track.playCount,
       firstPlayDate: track.firstPlayDate,
-      cover: track.cover,
     })),
     ...artists.map((artist) => ({
       type: "artist" as const,
@@ -125,7 +125,13 @@ export const getWrappedEntryTracks = (
     ]),
   );
   const history = index.history.filter((track) => {
-    if (entry.type === "artist") return track.artistName === entry.key;
+    if (entry.type === "artist") {
+      // Featuring credits: an artist resolved in the track's credited artist
+      // list sees those plays in their detail page too.
+      return (
+        track.artistName === entry.key || !!track.artists?.includes(entry.key)
+      );
+    }
     if (entry.type === "genre") return track.genres?.includes(entry.key);
     return trackKey(track.artistName, track.trackName) === entry.key;
   });

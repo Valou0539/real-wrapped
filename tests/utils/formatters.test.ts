@@ -1,5 +1,9 @@
 import { describe, it, expect } from "vitest";
-import { formatDuration, formatDate } from "~/utils/formatters";
+import {
+  formatDuration,
+  formatDate,
+  formatTrackArtists,
+} from "~/utils/formatters";
 
 describe("formatters", () => {
   describe("formatDuration", () => {
@@ -15,6 +19,27 @@ describe("formatters", () => {
     it("pads minutes correctly", () => {
       // 1 hour 5 minutes = 3900000 ms
       expect(formatDuration(3900000)).toBe("1h05");
+    });
+  });
+
+  describe("formatTrackArtists", () => {
+    it("joins all credited artists with commas", () => {
+      expect(
+        formatTrackArtists({
+          artistName: "Air",
+          artists: ["Air", "Beth Hirsch"],
+        }),
+      ).toBe("Air, Beth Hirsch");
+    });
+
+    it("falls back to the primary artist when artists is absent", () => {
+      expect(formatTrackArtists({ artistName: "Air" })).toBe("Air");
+    });
+
+    it("falls back to the primary artist when artists is empty", () => {
+      expect(formatTrackArtists({ artistName: "Air", artists: [] })).toBe(
+        "Air",
+      );
     });
   });
 

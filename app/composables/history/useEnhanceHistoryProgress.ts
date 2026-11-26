@@ -30,10 +30,15 @@ export const useEnhanceHistoryProgress = (jobId: string) => {
   /**
    * Récupère l'état du job
    */
-  const fetchJobState = async (id: string): Promise<JobState | null> => {
+  const fetchJobState = async (
+    id: string,
+  ): Promise<JobState | null | "missing"> => {
     try {
       return await $fetch<JobState>(`/api/enhance-history?jobId=${id}`);
     } catch (err) {
+      const status = (err as { response?: { status?: number } })?.response
+        ?.status;
+      if (status === 404) return "missing";
       console.error("Polling error:", err);
       return null;
     }
@@ -67,6 +72,14 @@ export const useEnhanceHistoryProgress = (jobId: string) => {
       try {
         const state = await fetchJobState(jobId);
         if (!isCurrent()) return;
+
+        if (state === "missing") {
+          // The job no longer exists server-side (server restart or
+          // cancellation): retrying is pointless, forget it entirely.
+          error.value = "music-history.upload.errors.fetch-job";
+          stopTracking();
+          return;
+        }
 
         if (!state) {
           error.value = "music-history.upload.errors.fetch-job";

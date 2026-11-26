@@ -45,19 +45,23 @@ export const computeTopArtists = (
   const map = history.reduce<
     Record<string, TopArtist & { trackStats: Record<string, number> }>
   >((acc, track) => {
-    const artist = track.artistName;
     const trackName = track.trackName;
+    // A play credits every artist resolved at import (featurings), each with
+    // the full listening time — no splitting. Legacy/unresolved rows credit
+    // the export artist only.
+    const credited = track.artists?.length ? track.artists : [track.artistName];
 
-    if (!acc[artist]) {
-      acc[artist] = {
-        artistName: artist,
-        msPlayed: track.msPlayed,
-        playCount: 1,
-        mostPlayedTrack: trackName,
-        firstPlayDate: track.endTime,
-        trackStats: { [trackName]: track.msPlayed },
-      };
-    } else {
+    for (const artist of new Set(credited)) {
+      if (!acc[artist]) {
+        acc[artist] = {
+          artistName: artist,
+          msPlayed: 0,
+          playCount: 0,
+          mostPlayedTrack: trackName,
+          firstPlayDate: track.endTime,
+          trackStats: {},
+        };
+      }
       const current = acc[artist];
 
       current.msPlayed += track.msPlayed;
@@ -100,10 +104,12 @@ export const computeTopTracks = (
       acc[key] = {
         trackName: track.trackName,
         artistName: track.artistName,
+        // Resolution is consistent per artist+track key, so carrying the
+        // first occurrence's credited artists is enough.
+        ...(track.artists?.length ? { artists: track.artists } : {}),
         msPlayed: track.msPlayed,
         playCount: 1,
         firstPlayDate: track.endTime,
-        cover: track.cover ?? "",
       };
     } else {
       acc[key].msPlayed += track.msPlayed;
